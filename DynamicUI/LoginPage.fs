@@ -56,16 +56,16 @@ module LoginPage =
         View.ContentPage
             (View.ScrollView
                 (View.StackLayout
-                    ([ View.Entry
+                    [ View.Entry
                         (placeholder = model.Email, horizontalTextAlignment = TextAlignment.Center,
                          textChanged = debounce 250 (fun args -> args.NewTextValue |> updateEmail),
                          margin = Thickness(16.0, 50.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Email)
 
-                       View.Entry
-                           (placeholder = model.Password, horizontalTextAlignment = TextAlignment.Center,
-                            textChanged = debounce 250 (fun args -> args.NewTextValue |> updatePassword),
-                            margin = Thickness(16.0, 0.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Text)
+                      View.Entry
+                          (placeholder = model.Password, horizontalTextAlignment = TextAlignment.Center,
+                           textChanged = debounce 250 (fun args -> args.NewTextValue |> updatePassword),
+                           margin = Thickness(16.0, 0.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Text)
 
-                       View.Button
-                           (text = "Login", margin = Thickness(16.0, 0.0, 16.0, 0.0), command = goToHome,
-                            commandCanExecute = (model.IsEmailValid && model.isPasswordValid)) ])))
+                      View.Button
+                          (text = "Login", margin = Thickness(16.0, 0.0, 16.0, 0.0), command = goToHome,
+                           commandCanExecute = (model.IsEmailValid && model.isPasswordValid)) ]))

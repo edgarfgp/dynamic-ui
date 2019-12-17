@@ -8,38 +8,46 @@ open FSharp.Data
 module HomePage =
 
     type Msg =
-        | WelcomeScreen
+        | GetMusicData
         | LogOutTapped
 
     type Model =
-        { Title: string }
+        { Title: string
+          ArtistName: string }
+
+    type MusicData = JsonProvider<"https://itunes.apple.com/search?term=jack+johnson&entity=musicVideo">
 
     type ExternalMsg =
         | NoOp
         | GoToLoginPage
 
-    let init =
-        { Title = "Welcome" }
-
-    type MusicData = JsonProvider<"Music.json">
-
     let getDataFromApple =
-        MusicData.GetSample().Results
-        |> Seq.filter (fun issue -> issue.Kind = "Jack Johnson & G. Love")
+        MusicData.GetSample().Results |> Array.toList
+
+    let init =
+        let results = getDataFromApple.Item 0
+        { Title = "Welcome"
+          ArtistName = results.TrackName }
 
     let update msg model =
         match msg with
-        | WelcomeScreen -> { model with Title = model.Title }, Cmd.none, ExternalMsg.NoOp
+        | GetMusicData ->
+            { model with Title = model.Title }, Cmd.none, ExternalMsg.NoOp
         | LogOutTapped ->
             model, Cmd.none, ExternalMsg.GoToLoginPage
 
     let view model dispatch =
         let goToLoginPage = fun () -> dispatch LogOutTapped
         View.ContentPage
-            (title = "Home", toolbarItems = [ View.ToolbarItem(text = "+", command = goToLoginPage) ],
+            (title = "Home", toolbarItems = [ View.ToolbarItem(text = "X", command = goToLoginPage) ],
              content =
                  View.StackLayout
                      (verticalOptions = LayoutOptions.StartAndExpand, horizontalOptions = LayoutOptions.Center,
                       children =
                           [ View.CollectionView
-                              [ View.Label(text = model.Title, margin = Thickness(16.0, 50.0, 16.0, 0.0)) ] ]))
+                              (items =
+                                  [ for index in 0 .. getDataFromApple.Length - 1 ->
+                                      let value = getDataFromApple.Item index
+                                      View.StackLayout
+                                          [ View.Label(text = value.ArtistName)
+                                            View.Label(text = value.TrackName) ] ]) ]))
