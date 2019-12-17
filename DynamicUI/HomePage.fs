@@ -4,16 +4,14 @@ open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
 open FSharp.Data
+open Xamarin.Forms
 
 module HomePage =
 
-    type Msg =
-        | GetMusicData
-        | LogOutTapped
+    type Msg = LogOutTapped
 
     type Model =
-        { Title: string
-          ArtistName: string }
+        { Title: string }
 
     type MusicData = JsonProvider<"https://itunes.apple.com/search?term=jack+johnson&entity=musicVideo">
 
@@ -25,14 +23,10 @@ module HomePage =
         MusicData.GetSample().Results |> Array.toList
 
     let init =
-        let results = getDataFromApple.Item 0
-        { Title = "Welcome"
-          ArtistName = results.TrackName }
+        { Title = "Welcome" }
 
     let update msg model =
         match msg with
-        | GetMusicData ->
-            { model with Title = model.Title }, Cmd.none, ExternalMsg.NoOp
         | LogOutTapped ->
             model, Cmd.none, ExternalMsg.GoToLoginPage
 
@@ -48,6 +42,4 @@ module HomePage =
                               (items =
                                   [ for index in 0 .. getDataFromApple.Length - 1 ->
                                       let value = getDataFromApple.Item index
-                                      View.StackLayout
-                                          [ View.Label(text = value.ArtistName)
-                                            View.Label(text = value.TrackName) ] ]) ]))
+                                      View.Label(text = value.TrackName, margin = Thickness(16.0, 8.0, 16.0, 8.0)) ]) ]))
