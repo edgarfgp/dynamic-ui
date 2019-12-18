@@ -3,7 +3,6 @@ namespace DynamicUI
 open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
-open Helpers
 
 module LoginPage =
     /// The messages dispatched by the view
@@ -56,10 +55,14 @@ module LoginPage =
         View.ContentPage
             (View.ScrollView
                 (View.StackLayout
-                    [ View.Entry
-                        (placeholder = model.Email, horizontalTextAlignment = TextAlignment.Center,
-                         textChanged = debounce 250 (fun args -> args.NewTextValue |> updateEmail),
-                         margin = Thickness(16.0, 50.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Email)
+                    [ View.Image
+                        (source = Path "https://picsum.photos/id/0/5616/3744",
+                         horizontalOptions = LayoutOptions.FillAndExpand,
+                         margin = Thickness(16.0, 50.0, 16.0, 16.0))
+                      View.Entry
+                          (placeholder = model.Email, horizontalTextAlignment = TextAlignment.Center,
+                           textChanged = debounce 250 (fun args -> args.NewTextValue |> updateEmail),
+                           margin = Thickness(16.0, 16.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Email)
 
                       View.Entry
                           (placeholder = model.Password, horizontalTextAlignment = TextAlignment.Center,
@@ -68,4 +71,10 @@ module LoginPage =
 
                       View.Button
                           (text = "Login", margin = Thickness(16.0, 0.0, 16.0, 0.0), command = goToHome,
-                           commandCanExecute = (model.IsEmailValid && model.isPasswordValid)) ]))
+                           commandCanExecute = (model.IsEmailValid && model.isPasswordValid),
+                           backgroundColor =
+                               (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
+                                else Color.LightGray),
+                           borderColor =
+                               (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
+                                else Color.Transparent), borderWidth = 1.0) ]))

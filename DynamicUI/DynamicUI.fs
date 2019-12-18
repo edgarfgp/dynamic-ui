@@ -70,7 +70,7 @@ module App =
     let view (model: Model) dispatch =
         let loginPage = LoginPage.view model.LoginPageModel (LoginPageMsg >> dispatch)
         let homePage =
-            model.HomePageModel |> Option.map (fun hModel -> HomePage.view hModel (HomePageMsg >> dispatch))
+            model.HomePageModel |> Option.map (fun hmodel -> HomePage.view hmodel (HomePageMsg >> dispatch))
 
         let allPages =
             { LoginPage = loginPage

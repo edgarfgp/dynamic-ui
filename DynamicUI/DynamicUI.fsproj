@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Models.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="HomePage.fs" />
     <Compile Include="LoginPage.fs" />
