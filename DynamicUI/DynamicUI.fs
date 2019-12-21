@@ -1,5 +1,6 @@
 ﻿namespace DynamicUI
 
+open Fabulous.XamarinForms.LiveUpdate
 open Fabulous
 open Fabulous.XamarinForms
 open Models
@@ -106,9 +107,14 @@ module App =
 type App () as app =
     inherit Application ()
 
-    let _ =
+    let runner =
         App.program
 #if DEBUG
         |> Program.withConsoleTrace
+
 #endif
         |> XamarinFormsProgram.run app
+
+#if DEBUG
+    do runner.EnableLiveUpdate()
+#endif
