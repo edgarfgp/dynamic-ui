@@ -5,7 +5,6 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module LoginPage =
-    /// The messages dispatched by the view
     type Msg =
         | LoginTapped
         | EmailTextChanged of string
@@ -15,14 +14,12 @@ module LoginPage =
         | NoOp
         | GoToHomePage
 
-    /// The model from which the view is generated
     type Model =
         { Email: string
           Password: string
           IsEmailValid: bool
           isPasswordValid: bool }
 
-    /// Returns the initial state
     let init =
         { Email = "exmaple@email.com"
           Password = "enter a password"
@@ -30,9 +27,9 @@ module LoginPage =
           isPasswordValid = false }
 
     let validateEmail (email: string) = email.Contains("@")
-    let validatePassword (password: string) = password.Length > 6
+    //FIXME for testing purpose We will set this > 1. Once we fishing we will set this back to 6
+    let validatePassword (password: string) = password.Length > 1
 
-    /// The function to update the view
     let update msg model =
         match msg with
         | EmailTextChanged email ->
@@ -46,7 +43,6 @@ module LoginPage =
         | LoginTapped ->
             model, Cmd.none, ExternalMsg.GoToHomePage
 
-    /// The view function giving updated content for the page
     let view model dispatch =
         let updateEmail = EmailTextChanged >> dispatch
         let updatePassword = PasswordTextChanged >> dispatch
@@ -55,10 +51,12 @@ module LoginPage =
         View.ContentPage
             (View.ScrollView
                 (View.StackLayout
+
                     [ View.Image
                         (source = Path "https://picsum.photos/id/0/5616/3744",
-                         horizontalOptions = LayoutOptions.FillAndExpand,
-                         margin = Thickness(16.0, 50.0, 16.0, 16.0))
+                         horizontalOptions = LayoutOptions.FillAndExpand, margin = Thickness(16.0, 50.0, 16.0, 16.0),
+                         height = 200.0)
+
                       View.Entry
                           (placeholder = model.Email, horizontalTextAlignment = TextAlignment.Center,
                            textChanged = debounce 250 (fun args -> args.NewTextValue |> updateEmail),
@@ -67,7 +65,7 @@ module LoginPage =
                       View.Entry
                           (placeholder = model.Password, horizontalTextAlignment = TextAlignment.Center,
                            textChanged = debounce 250 (fun args -> args.NewTextValue |> updatePassword),
-                           margin = Thickness(16.0, 0.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Text)
+                           margin = Thickness(16.0, 0.0, 16.0, 16.0), height = 50.0, isPassword = true)
 
                       View.Button
                           (text = "Login", margin = Thickness(16.0, 0.0, 16.0, 0.0), command = goToHome,

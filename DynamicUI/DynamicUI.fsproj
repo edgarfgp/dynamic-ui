@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Helpers.fs" />
+    <Content Include="Music.json" />
+    <Compile Include="Models.fs" />
+    <Compile Include="DetailPage.fs" />
     <Compile Include="HomePage.fs" />
     <Compile Include="LoginPage.fs" />
     <Compile Include="DynamicUI.fs" />
-    <Content Include="Music.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.3.0.908675" />
