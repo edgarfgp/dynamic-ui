@@ -15,15 +15,15 @@ module HomePage =
         { MusicList: Music list }
 
     [<Literal>]
-    let musicApiUrl = @"https://itunes.apple.com/search?term="""
+    let url = @"https://itunes.apple.com/search?term="""
 
-    type MusicData = JsonProvider<musicApiUrl>
+    type MusicData = JsonProvider<url>
 
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
 
-    let getDataFromApple =
+    let getArtistData =
         MusicData.GetSample().Results
         |> Array.toList
         |> List.map (fun c ->
@@ -34,7 +34,7 @@ module HomePage =
               Country = c.Country })
 
     let init =
-        { MusicList = getDataFromApple }
+        { MusicList = getArtistData }
 
     let update msg model =
         match msg with

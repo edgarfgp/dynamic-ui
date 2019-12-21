@@ -82,7 +82,7 @@ module App =
         | None, None -> [ loginPage ]
         | Some homePage, None -> [ homePage ]
         | Some homePage, Some detailPage -> [ homePage; detailPage ]
-        | _ , Some detailPage -> [ detailPage ]
+        | None , Some detailPage -> [ detailPage ]
 
     let view (model: Model) dispatch =
         let loginPage = LoginPage.view model.LoginPageModel (LoginPageMsg >> dispatch)
