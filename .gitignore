@@ -16,6 +16,8 @@ nupkg/
 *.user
 *.userosscache
 *.sln.docstates
+*.signature
+*.ps7
 
 # Build results
 [Dd]ebug/
@@ -27,6 +29,7 @@ x86/
 build/
 bld/
 [Bb]in/
+[Ll]ib/
 [Oo]bj/
 [Oo]ut/
 msbuild.log
@@ -35,3 +38,4 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+packages
