@@ -27,8 +27,7 @@ module LoginPage =
           isPasswordValid = false }
 
     let validateEmail (email: string) = email.Contains("@")
-    //FIXME for testing purpose We will set this > 1. Once we fishing we will set this back to 6
-    let validatePassword (password: string) = password.Length > 1
+    let validatePassword (password: string) = password.Length > 6
 
     let update msg model =
         match msg with
@@ -48,31 +47,54 @@ module LoginPage =
         let updatePassword = PasswordTextChanged >> dispatch
         let goToHome = fun () -> dispatch LoginTapped
 
-        View.ContentPage
-            (View.ScrollView
-                (View.StackLayout
+        let loginEntries =
+            StackLayout.stackLayout
+                [ StackLayout.Children
+                    [ Image.image
+                        [ Image.Source(Image.Path("https://picsum.photos/id/0/5616/3744"))
+                          Image.HorizontalLayout LayoutOptions.FillAndExpand
+                          Image.MarginLeft 16.0
+                          Image.MarginRight 16.0
+                          Image.MarginTop 80.0
+                          Image.Height 200.0 ]
 
-                    [ View.Image
-                        (source = Path "https://picsum.photos/id/0/5616/3744",
-                         horizontalOptions = LayoutOptions.FillAndExpand, margin = Thickness(16.0, 50.0, 16.0, 16.0),
-                         height = 200.0)
+                      TextEntry.textEntry
+                          [ TextEntry.Placeholder model.Email
+                            TextEntry.HorizontalTextAlignment TextAlignment.Center
+                            TextEntry.OnTextChanged(debounce 250 (fun args -> args.NewTextValue |> updateEmail))
+                            TextEntry.MarginLeft 16.0
+                            TextEntry.MarginRight 16.0
+                            TextEntry.MarginTop 16.0
+                            TextEntry.Height 50.0
+                            TextEntry.Keyboard Keyboard.Email ]
 
-                      View.Entry
-                          (placeholder = model.Email, horizontalTextAlignment = TextAlignment.Center,
-                           textChanged = debounce 250 (fun args -> args.NewTextValue |> updateEmail),
-                           margin = Thickness(16.0, 16.0, 16.0, 16.0), height = 50.0, keyboard = Keyboard.Email)
+                      TextEntry.textEntry
+                          [ TextEntry.Placeholder model.Password
+                            TextEntry.HorizontalTextAlignment TextAlignment.Center
+                            TextEntry.OnTextChanged(debounce 250 (fun args -> args.NewTextValue |> updatePassword))
+                            TextEntry.MarginLeft 16.0
+                            TextEntry.MarginRight 16.0
+                            TextEntry.MarginTop 16.0
+                            TextEntry.Height 50.0
+                            TextEntry.IsPassword true ]
 
-                      View.Entry
-                          (placeholder = model.Password, horizontalTextAlignment = TextAlignment.Center,
-                           textChanged = debounce 250 (fun args -> args.NewTextValue |> updatePassword),
-                           margin = Thickness(16.0, 0.0, 16.0, 16.0), height = 50.0, isPassword = true)
+                      Button.button
+                          [ Button.Text "Login"
+                            Button.Margin 16.0
+                            Button.OnClick goToHome
+                            Button.CanExecute(model.IsEmailValid && model.isPasswordValid)
+                            Button.BackgroundColor
+                                (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
+                                 else Color.LightGray)
+                            Button.BorderColor
+                                (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
+                                 else Color.Transparent)
+                            Button.BorderWidth 1.0 ] ] ]
 
-                      View.Button
-                          (text = "Login", margin = Thickness(16.0, 0.0, 16.0, 0.0), command = goToHome,
-                           commandCanExecute = (model.IsEmailValid && model.isPasswordValid),
-                           backgroundColor =
-                               (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
-                                else Color.LightGray),
-                           borderColor =
-                               (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
-                                else Color.Transparent), borderWidth = 1.0) ]))
+        let mainLayout =
+            StackLayout.stackLayout
+                [ StackLayout.Children [ ScrollView.scrollView [ ScrollView.Content loginEntries ] ] ]
+
+        ContentPage.contentPage
+            [ ContentPage.HasNavigationBar false
+              ContentPage.Content mainLayout ]
