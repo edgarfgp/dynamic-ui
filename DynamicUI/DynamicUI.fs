@@ -82,9 +82,10 @@ module App =
     let update msg model =
         match msg with
         | HomePageMsg msg ->
-            let hModel, _, externalMsg = HomePage.update msg model.HomePageModel
-            let externalLoginMsg = handleHomeExternalMsg externalMsg
-            { model with HomePageModel = hModel }, externalLoginMsg
+            let hModel, cmd, externalMsg = HomePage.update msg model.HomePageModel
+            let externalHomeMsg = handleHomeExternalMsg externalMsg
+            let batchCmd = Cmd.batch [ (Cmd.map HomePageMsg cmd); externalHomeMsg ]
+            { model with HomePageModel = hModel }, batchCmd
         | LoginPageMsg msg ->
             let lModel, externalMsg = LoginPage.update msg model.LoginPageModel.Value
             let externalLoginMsg = handleLoginExternalMsg externalMsg

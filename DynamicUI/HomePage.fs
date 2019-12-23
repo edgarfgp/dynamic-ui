@@ -12,9 +12,12 @@ module HomePage =
         | MusicSelected of Music
         | AboutTapped
         | LoginTapped
+        | RefreshViewRefreshing
+        | RefreshViewRefreshDone of Music list
 
     type Model =
-        { MusicList: Music list }
+        { MusicList: Music list
+          IsRefreshingData: bool }
 
     [<Literal>]
     let url = @"https://itunes.apple.com/search?term="""
@@ -38,8 +41,31 @@ module HomePage =
               TrackName = (string) c.TrackName
               Country = c.Country })
 
+    let getMusicData =
+        Cmd.ofAsyncMsg
+            (async {
+                do! Async.Sleep 2000
+                let! blogEntries = Async.Catch(Http.AsyncRequestString(url))
+                match blogEntries with
+                | Choice1Of2 musicList ->
+                    let result =
+                        (JsonProvider<url>.Parse musicList).Results
+                        |> Array.toList
+                        |> List.map (fun c ->
+                            { ImageUrl = c.ArtworkUrl60
+                              ArtistName = c.ArtistName
+                              Genre = c.PrimaryGenreName
+                              TrackName = (string) c.TrackName
+                              Country = c.Country })
+
+                    return RefreshViewRefreshDone result
+
+                | Choice2Of2 _ -> return RefreshViewRefreshing
+             })
+
     let init =
-        { MusicList = getArtistData }
+        { MusicList = getArtistData
+          IsRefreshingData = false }
 
     let update msg model =
         match msg with
@@ -49,6 +75,12 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToAbout
         | LoginTapped ->
             model, Cmd.none, ExternalMsg.NavigateToLogin
+        | RefreshViewRefreshing ->
+            { model with IsRefreshingData = true }, getMusicData, ExternalMsg.NoOp
+        | RefreshViewRefreshDone music ->
+            { model with
+                  IsRefreshingData = false
+                  MusicList = music }, Cmd.none, ExternalMsg.NoOp
 
     //View that takes a model and update the view if needed
     let view model dispatch =
@@ -85,7 +117,11 @@ module HomePage =
             StackLayout.stackLayout
                 [ StackLayout.Children
                     //Can not use the Simplified version of CollectionView due to a exception
-                    [ View.CollectionView(items = renderEntries model.MusicList, selectionMode = SelectionMode.Single) ] ]
+                    [ View.RefreshView
+                        (content =
+                            View.CollectionView
+                                (items = renderEntries model.MusicList, selectionMode = SelectionMode.Single),
+                         isRefreshing = model.IsRefreshingData, refreshing = (fun () -> dispatch RefreshViewRefreshing)) ] ]
 
         ContentPage.contentPage
             [ ContentPage.Title "Home"
