@@ -13,6 +13,7 @@ type AppDelegate() =
 
     override this.FinishedLaunching(app, options) =
         Xamarin.Forms.Forms.SetFlags([| "Shell_Experimental"; "CollectionView_Experimental"; "Visual_Experimental"; "CarouselView_Experimental" |])
+        FFImageLoading.Forms.Platform.CachedImageRenderer.Init()
         Forms.Init()
         let appcore = new DynamicUI.App()
         this.LoadApplication(appcore)
