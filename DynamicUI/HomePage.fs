@@ -8,7 +8,10 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module HomePage =
-    type Msg = MusicSelected of Music
+    type Msg =
+        | MusicSelected of Music
+        | AboutTapped
+        | LoginTapped
 
     type Model =
         { MusicList: Music list }
@@ -18,9 +21,12 @@ module HomePage =
 
     type MusicData = JsonProvider<url>
 
+    //Update function that takes a message and a model and give us back a new Model
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
+        | NavigateToAbout
+        | NavigateToLogin
 
     let getArtistData =
         MusicData.GetSample().Results
@@ -39,12 +45,15 @@ module HomePage =
         match msg with
         | MusicSelected music ->
             model, Cmd.none, ExternalMsg.NavigateToDetail music
+        | AboutTapped ->
+            model, Cmd.none, ExternalMsg.NavigateToAbout
+        | LoginTapped ->
+            model, Cmd.none, ExternalMsg.NavigateToLogin
 
+    //View that takes a model and update the view if needed
     let view model dispatch =
-        let tapGestureRecognizer msg =
-            TapGestureRecognizer.tapGestureRecognizer [ TapGestureRecognizer.OnTapped(fun () -> dispatch msg) ]
 
-        let rederItemlayout item =
+        let rederItem item =
             StackLayout.stackLayout
                 [ StackLayout.Children
                     [ Image.image
@@ -60,9 +69,11 @@ module HomePage =
 
         let renderEntries items =
             [ for item in items ->
-                let itemlayout = rederItemlayout item
+                let itemlayout = rederItem item
                 StackLayout.stackLayout
-                    [ StackLayout.GestureRecognizers [ tapGestureRecognizer (MusicSelected item) ]
+                    [ StackLayout.GestureRecognizers
+                        [ TapGestureRecognizer.tapGestureRecognizer
+                            [ TapGestureRecognizer.OnTapped(fun () -> dispatch (MusicSelected item)) ] ]
                       StackLayout.Children
                           [ Frame.frame
                               [ Frame.CornerRadius 5.0
@@ -78,4 +89,7 @@ module HomePage =
 
         ContentPage.contentPage
             [ ContentPage.Title "Home"
-              ContentPage.Content content ]
+              ContentPage.ToolbarItems
+                  [ View.ToolbarItem(text = "About", command = (fun () -> dispatch AboutTapped))
+                    View.ToolbarItem(text = "Log in", command = (fun () -> dispatch LoginTapped)) ]
+              ContentPage.Content(content) ]

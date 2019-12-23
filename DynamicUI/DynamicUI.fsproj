@@ -8,6 +8,7 @@
   <ItemGroup>
     <Content Include="Music.json" />
     <Compile Include="Models.fs" />
+    <Compile Include="AboutPage.fs" />
     <Compile Include="DetailPage.fs" />
     <Compile Include="HomePage.fs" />
     <Compile Include="LoginPage.fs" />

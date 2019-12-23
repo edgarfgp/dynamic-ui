@@ -1,44 +1,56 @@
 namespace DynamicUI
 
-open Fabulous
 open Fabulous.XamarinForms
 open Models
 open Xamarin.Forms
-
 
 module DetailPage =
 
     type Msg = ShowInfo
 
-    type ExternalMsg = NoOp
-
     type Model =
         { Music: Music }
 
     let init music =
-        { Music = music }, Cmd.none
+        { Music = music }
 
     let update msg model =
         match msg with
-        | ShowInfo -> model, Cmd.none, ExternalMsg.NoOp
+        | ShowInfo -> model
 
     let view model _ =
-        View.ContentPage
-            (title = "Song Detail",
-             content =
-                 View.ScrollView
-                     (View.StackLayout
-                         (children =
-                             [ View.Image(source = Path model.ImageUrl, height = 200.0, margin = Thickness(16.0))
-                               View.Label
-                                   (text = model.ArtistName, margin = Thickness(16.0),
-                                    horizontalTextAlignment = TextAlignment.Center)
-                               View.Label
-                                   (text = model.Genre, margin = Thickness(16.0),
-                                    horizontalTextAlignment = TextAlignment.Center)
-                               View.Label
-                                   (text = model.TrackName, margin = Thickness(16.0),
-                                    horizontalTextAlignment = TextAlignment.Center)
-                               View.Label
-                                   (text = model.Country, margin = Thickness(16.0),
-                                    horizontalTextAlignment = TextAlignment.Center) ])))
+
+        let detailEntries =
+            StackLayout.stackLayout
+                [ StackLayout.Children
+                    [ Image.image
+                        [ Image.Source(Image.Path(model.ImageUrl))
+                          Image.Height 200.0
+                          Image.Margin 16.0 ]
+
+                      Label.label
+                          [ Label.Text model.ArtistName
+                            Label.Margin 16.0
+                            Label.HorizontalTextAlignment TextAlignment.Center ]
+
+                      Label.label
+                          [ Label.Text model.Genre
+                            Label.Margin 16.0
+                            Label.HorizontalTextAlignment TextAlignment.Center ]
+
+                      Label.label
+                          [ Label.Text model.TrackName
+                            Label.Margin 16.0
+                            Label.HorizontalTextAlignment TextAlignment.Center ]
+
+                      Label.label
+                          [ Label.Text model.Country
+                            Label.Margin 16.0
+                            Label.HorizontalTextAlignment TextAlignment.Center ] ] ]
+
+        let content =
+            ScrollView.scrollView [ ScrollView.Content detailEntries ]
+
+        ContentPage.contentPage
+            [ ContentPage.Title "Song Detail"
+              ContentPage.Content content ]

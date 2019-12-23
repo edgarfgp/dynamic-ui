@@ -10,9 +10,10 @@ module LoginPage =
         | EmailTextChanged of string
         | PasswordTextChanged of string
 
+    //ExternalMsg exposes the Action that will be handleExternalMsg int DynamicUI.fs
     type ExternalMsg =
         | NoOp
-        | GoToHomePage
+        | NavigateToHomePage
 
     type Model =
         { Email: string
@@ -27,25 +28,24 @@ module LoginPage =
           isPasswordValid = false }
 
     let validateEmail (email: string) = email.Contains("@")
-    let validatePassword (password: string) = password.Length > 6
+    let validatePassword (password: string) = password.Length > 0
 
+    //Update function that takes a message and a model and give us back a new Model
     let update msg model =
         match msg with
         | EmailTextChanged email ->
             { model with
                   Email = email
-                  IsEmailValid = (validateEmail email) }, Cmd.none, ExternalMsg.NoOp
+                  IsEmailValid = validateEmail email }, ExternalMsg.NoOp
         | PasswordTextChanged password ->
             { model with
                   Password = password
-                  isPasswordValid = (validatePassword password) }, Cmd.none, ExternalMsg.NoOp
+                  isPasswordValid = validatePassword password }, ExternalMsg.NoOp
         | LoginTapped ->
-            model, Cmd.none, ExternalMsg.GoToHomePage
+            model, ExternalMsg.NavigateToHomePage
 
+    //View that takes a model and update the view if needed
     let view model dispatch =
-        let updateEmail = EmailTextChanged >> dispatch
-        let updatePassword = PasswordTextChanged >> dispatch
-        let goToHome = fun () -> dispatch LoginTapped
 
         let loginEntries =
             StackLayout.stackLayout
@@ -61,7 +61,8 @@ module LoginPage =
                       TextEntry.textEntry
                           [ TextEntry.Placeholder model.Email
                             TextEntry.HorizontalTextAlignment TextAlignment.Center
-                            TextEntry.OnTextChanged(debounce 250 (fun args -> args.NewTextValue |> updateEmail))
+                            TextEntry.OnTextChanged
+                                (debounce 250 (fun args -> args.NewTextValue |> (EmailTextChanged >> dispatch)))
                             TextEntry.MarginLeft 16.0
                             TextEntry.MarginRight 16.0
                             TextEntry.MarginTop 16.0
@@ -71,7 +72,8 @@ module LoginPage =
                       TextEntry.textEntry
                           [ TextEntry.Placeholder model.Password
                             TextEntry.HorizontalTextAlignment TextAlignment.Center
-                            TextEntry.OnTextChanged(debounce 250 (fun args -> args.NewTextValue |> updatePassword))
+                            TextEntry.OnTextChanged
+                                (debounce 250 (fun args -> args.NewTextValue |> (PasswordTextChanged >> dispatch)))
                             TextEntry.MarginLeft 16.0
                             TextEntry.MarginRight 16.0
                             TextEntry.MarginTop 16.0
@@ -81,7 +83,7 @@ module LoginPage =
                       Button.button
                           [ Button.Text "Login"
                             Button.Margin 16.0
-                            Button.OnClick goToHome
+                            Button.OnClick(fun () -> dispatch LoginTapped)
                             Button.CanExecute(model.IsEmailValid && model.isPasswordValid)
                             Button.BackgroundColor
                                 (if (model.IsEmailValid && model.isPasswordValid) then Color.LightBlue
@@ -91,10 +93,9 @@ module LoginPage =
                                  else Color.Transparent)
                             Button.BorderWidth 1.0 ] ] ]
 
-        let mainLayout =
-            StackLayout.stackLayout
-                [ StackLayout.Children [ ScrollView.scrollView [ ScrollView.Content loginEntries ] ] ]
+        let content =
+            ScrollView.scrollView [ ScrollView.Content loginEntries ]
 
         ContentPage.contentPage
             [ ContentPage.HasNavigationBar false
-              ContentPage.Content mainLayout ]
+              ContentPage.Content content ]
