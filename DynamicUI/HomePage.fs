@@ -8,8 +8,7 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module HomePage =
-    type Msg =
-        | MusicSelected of Music
+    type Msg = MusicSelected of Music
 
     type Model =
         { MusicList: Music list }
@@ -42,31 +41,41 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
     let view model dispatch =
-        let tapGestureRecognizer msg = View.TapGestureRecognizer(command = fun () -> dispatch msg)
-        View.ContentPage
-            (title = "Home",
-             content =
-                 View.StackLayout
-                     (children =
-                         [ View.CollectionView
-                             (items =
-                                 [ for index in 0 .. model.MusicList.Length - 1 ->
-                                     let item = model.MusicList.Item index
-                                     View.StackLayout
-                                         (children =
-                                             [ View.Frame
-                                                 (content =
-                                                     View.StackLayout
-                                                         [ View.Image
-                                                             (source = Path item.ImageUrl,
-                                                              horizontalOptions = LayoutOptions.FillAndExpand,
-                                                              verticalOptions = LayoutOptions.FillAndExpand)
+        let tapGestureRecognizer msg =
+            TapGestureRecognizer.tapGestureRecognizer [ TapGestureRecognizer.OnTapped(fun () -> dispatch msg) ]
 
-                                                           View.Label
-                                                               (text = item.ArtistName,
-                                                                horizontalTextAlignment = TextAlignment.Center,
-                                                                margin = Thickness(16.0)) ], margin = Thickness(8.0),
-                                                  cornerRadius = 5.0, height = 250.0,
-                                                  gestureRecognizers = [ tapGestureRecognizer (MusicSelected item) ]) ]) ],
-                              emptyView = View.Label(text = "There is not information for now..."),
-                              selectionMode = SelectionMode.Single) ]))
+        let rederItemlayout item =
+            StackLayout.stackLayout
+                [ StackLayout.Children
+                    [ Image.image
+                        [ Image.Source(Image.Path(item.ImageUrl))
+                          Image.MarginTop 16.0
+                          Image.HorizontalLayout LayoutOptions.FillAndExpand
+                          Image.VerticalLayout LayoutOptions.FillAndExpand ]
+
+                      Label.label
+                          [ Label.Text item.ArtistName
+                            Label.HorizontalTextAlignment TextAlignment.Center
+                            Label.Margin 16.0 ] ] ]
+
+        let renderEntries items =
+            [ for item in items ->
+                let itemlayout = rederItemlayout item
+                StackLayout.stackLayout
+                    [ StackLayout.GestureRecognizers [ tapGestureRecognizer (MusicSelected item) ]
+                      StackLayout.Children
+                          [ Frame.frame
+                              [ Frame.CornerRadius 5.0
+                                Frame.HeightRequest 250.0
+                                Frame.Margin 8.0
+                                Frame.Content itemlayout ] ] ] ]
+
+        let content =
+            StackLayout.stackLayout
+                [ StackLayout.Children
+                    //Can not use the Simplified version of CollectionView due to a exception
+                    [ View.CollectionView(items = renderEntries model.MusicList, selectionMode = SelectionMode.Single) ] ]
+
+        ContentPage.contentPage
+            [ ContentPage.Title "Home"
+              ContentPage.Content content ]
