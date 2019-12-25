@@ -8,16 +8,10 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module HomePage =
-    type Msg =
-        | MusicSelected of Music
-        | AboutTapped
-        | LoginTapped
-        | RefreshViewRefreshing
-        | RefreshViewRefreshDone of Music list
+    type Msg = MusicSelected of Music
 
     type Model =
-        { MusicList: Music list
-          IsRefreshingData: bool }
+        { MusicList: Music list }
 
     [<Literal>]
     let url = @"https://itunes.apple.com/search?term="""
@@ -28,8 +22,6 @@ module HomePage =
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
-        | NavigateToAbout
-        | NavigateToLogin
 
     let getArtistData =
         MusicData.GetSample().Results
@@ -58,29 +50,18 @@ module HomePage =
                               TrackName = (string) c.TrackName
                               Country = c.Country })
 
-                    return RefreshViewRefreshDone result
+                    return result
 
-                | Choice2Of2 _ -> return RefreshViewRefreshing
+                | Choice2Of2 _ -> return []
              })
 
     let init =
-        { MusicList = getArtistData
-          IsRefreshingData = false }
+        { MusicList = getArtistData }
 
     let update msg model =
         match msg with
         | MusicSelected music ->
-            model, Cmd.none, ExternalMsg.NavigateToDetail music
-        | AboutTapped ->
-            model, Cmd.none, ExternalMsg.NavigateToAbout
-        | LoginTapped ->
-            model, Cmd.none, ExternalMsg.NavigateToLogin
-        | RefreshViewRefreshing ->
-            { model with IsRefreshingData = true }, getMusicData, ExternalMsg.NoOp
-        | RefreshViewRefreshDone music ->
-            { model with
-                  IsRefreshingData = false
-                  MusicList = music }, Cmd.none, ExternalMsg.NoOp
+            model, ExternalMsg.NavigateToDetail music
 
     //View that takes a model and update the view if needed
     let view model dispatch =
@@ -116,16 +97,8 @@ module HomePage =
         let content =
             StackLayout.stackLayout
                 [ StackLayout.Children
-                    //Can not use the Simplified version of CollectionView due to a exception
-                    [ View.RefreshView
-                        (content =
-                            View.CollectionView
-                                (items = renderEntries model.MusicList, selectionMode = SelectionMode.Single),
-                         isRefreshing = model.IsRefreshingData, refreshing = (fun () -> dispatch RefreshViewRefreshing)) ] ]
+                    [ View.CollectionView(items = renderEntries model.MusicList, selectionMode = SelectionMode.Single) ] ]
 
         ContentPage.contentPage
             [ ContentPage.Title "Home"
-              ContentPage.ToolbarItems
-                  [ View.ToolbarItem(text = "About", command = (fun () -> dispatch AboutTapped))
-                    View.ToolbarItem(text = "Log in", command = (fun () -> dispatch LoginTapped)) ]
               ContentPage.Content(content) ]
