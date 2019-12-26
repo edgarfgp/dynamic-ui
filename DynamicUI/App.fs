@@ -12,10 +12,15 @@ module App =
         | HomePageMsg of HomePage.Msg
         | DetailPageMsg of DetailPage.Msg
         | GoToDetailPage of Music
+        | NavigationPopped
 
     type Model =
         { HomePageModel: HomePage.Model
-          DetailPageModel: DetailPage.Model option }
+          DetailPageModel: DetailPage.Model option
+          // Workaround Cmd limitation -- Can not pop a page in page stack and send Cmd at the same time
+          // Otherwise it would pop pages 2 times in NavigationPage
+          WorkaroundNavPageBug: bool
+          WorkaroundNavPageBugPendingCmd: Cmd<Msg> }
 
     type Pages =
         { HomePage: ViewElement
@@ -24,7 +29,9 @@ module App =
     let init() =
             let hModel, cmd = HomePage.init
             { HomePageModel = hModel
-              DetailPageModel = None }, Cmd.map HomePageMsg cmd
+              DetailPageModel = None
+              WorkaroundNavPageBug = false
+              WorkaroundNavPageBugPendingCmd = Cmd.none }, Cmd.map HomePageMsg cmd
 
     let handleHomeExternalMsg externalMsg =
         match externalMsg with
@@ -32,6 +39,14 @@ module App =
             Cmd.none
         | HomePage.ExternalMsg.NavigateToDetail music ->
             Cmd.ofMsg (GoToDetailPage music)
+
+    let navigationMapper model =
+        let detailModel = model.DetailPageModel
+        match  detailModel with
+        | None ->
+            model
+        | Some _  ->
+            { model with DetailPageModel = None }
 
     let update msg model =
         match msg with
@@ -44,8 +59,20 @@ module App =
             { model with  DetailPageModel = None }, Cmd.none
 
         | GoToDetailPage music ->
-            let m = DetailPage.init music
-            { model with DetailPageModel = Some m }, Cmd.none
+            let dModel = DetailPage.init music
+            { model with DetailPageModel = Some dModel }, Cmd.none
+
+        | NavigationPopped ->
+            match model.WorkaroundNavPageBug with
+            | true ->
+                // Do not pop pages if already done manually
+                let newModel =
+                    { model with
+                        WorkaroundNavPageBug = false
+                        WorkaroundNavPageBugPendingCmd = Cmd.none }
+                newModel, model.WorkaroundNavPageBugPendingCmd
+            | false ->
+                navigationMapper model, Cmd.none
 
     let getPages allPages =
         let homePage = allPages.HomePage
@@ -55,7 +82,7 @@ module App =
         | None -> [ homePage ]
         | Some detailPage -> [ homePage ; detailPage ]
 
-    let view (model: Model) dispatch =
+    let view model dispatch =
 
         let homePage = HomePage.view model.HomePageModel (HomePageMsg >> dispatch)
 
@@ -70,6 +97,7 @@ module App =
             NavigationPage.UseSafeArea true
             NavigationPage.BarTextColor Color.Azure
             NavigationPage.BarBackgroundColor Color.LightBlue
+            NavigationPage.OnPopped  (fun _ -> dispatch NavigationPopped)
             NavigationPage.Pages (getPages allPages) ]
 
     let program = Program.mkProgram init update view

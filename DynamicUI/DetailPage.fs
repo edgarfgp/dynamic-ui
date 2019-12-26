@@ -6,7 +6,7 @@ open Xamarin.Forms
 
 module DetailPage =
 
-    type Msg = ShowInfo
+    type Msg = MusicDetailInfo
 
     type Model =
         { Music: Music }
@@ -16,7 +16,7 @@ module DetailPage =
 
     let update msg model =
         match msg with
-        | ShowInfo -> model
+        | MusicDetailInfo -> model
 
     let view model _ =
 
@@ -52,5 +52,5 @@ module DetailPage =
             ScrollView.scrollView [ ScrollView.Content detailEntries ]
 
         ContentPage.contentPage
-            [ ContentPage.Title "Song Detail"
+            [ ContentPage.Title "Music Detail"
               ContentPage.Content content ]
