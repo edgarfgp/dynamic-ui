@@ -8,62 +8,59 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module HomePage =
-    type Msg = MusicSelected of Music
+    type Msg =
+        | MusicLoading
+        | MusicLoaded of Music list
+        | MusicLoadedError of string
+        | GoToDetailPage of Music
 
     type Model =
-        { MusicList: Music list }
+        { MusicList: Remote<Result<Music list, string>> }
 
     [<Literal>]
     let url = @"https://itunes.apple.com/search?term="""
 
     type MusicData = JsonProvider<url>
 
-    //Update function that takes a message and a model and give us back a new Model
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
 
-    let getArtistData =
-        MusicData.GetSample().Results
-        |> Array.toList
-        |> List.map (fun c ->
-            { ImageUrl = c.ArtworkUrl60
-              ArtistName = c.ArtistName
-              Genre = c.PrimaryGenreName
-              TrackName = (string) c.TrackName
-              Country = c.Country })
-
     let getMusicData =
-        Cmd.ofAsyncMsg
-            (async {
-                do! Async.Sleep 2000
-                let! blogEntries = Async.Catch(Http.AsyncRequestString(url))
-                match blogEntries with
-                | Choice1Of2 musicList ->
-                    let result =
-                        (JsonProvider<url>.Parse musicList).Results
-                        |> Array.toList
-                        |> List.map (fun c ->
-                            { ImageUrl = c.ArtworkUrl60
-                              ArtistName = c.ArtistName
-                              Genre = c.PrimaryGenreName
-                              TrackName = (string) c.TrackName
-                              Country = c.Country })
-
-                    return result
-
-                | Choice2Of2 _ -> return []
-             })
+        async {
+            let! result = MusicData.AsyncGetSample()
+            return if result.ResultCount > 0 then
+                       let music =
+                           result.Results
+                           |> Array.toList
+                           |> List.map (fun c ->
+                               { ImageUrl = c.ArtworkUrl60
+                                 ArtistName = c.ArtistName
+                                 Genre = c.PrimaryGenreName
+                                 TrackName = (string) c.TrackName
+                                 Country = c.Country })
+                       MusicLoaded music
+                   else
+                       MusicLoadedError "Error getting data from iTunes"
+        }
 
     let init =
-        { MusicList = getArtistData }
+        { MusicList = Remote.Empty }, Cmd.ofMsg MusicLoading
 
     let update msg model =
         match msg with
-        | MusicSelected music ->
-            model, ExternalMsg.NavigateToDetail music
+        | MusicLoading ->
+            { model with MusicList = Loading }, Cmd.ofAsyncMsg getMusicData, ExternalMsg.NoOp
 
-    //View that takes a model and update the view if needed
+        | MusicLoaded data ->
+            { model with MusicList = Content(Ok data) }, Cmd.none, ExternalMsg.NoOp
+
+        | MusicLoadedError error ->
+            { model with MusicList = Content(Error error) }, Cmd.none, ExternalMsg.NoOp
+
+        | GoToDetailPage music ->
+            model, Cmd.none, ExternalMsg.NavigateToDetail music
+
     let view model dispatch =
 
         let rederItem item =
@@ -81,23 +78,44 @@ module HomePage =
                             Label.Margin 16.0 ] ] ]
 
         let renderEntries items =
-            [ for item in items ->
-                let itemlayout = rederItem item
-                StackLayout.stackLayout
-                    [ StackLayout.GestureRecognizers
-                        [ TapGestureRecognizer.tapGestureRecognizer
-                            [ TapGestureRecognizer.OnTapped(fun () -> dispatch (MusicSelected item)) ] ]
-                      StackLayout.Children
-                          [ Frame.frame
-                              [ Frame.CornerRadius 5.0
-                                Frame.HeightRequest 250.0
-                                Frame.Margin 8.0
-                                Frame.Content itemlayout ] ] ] ]
+            View.CollectionView
+                (items =
+                    [ for item in items ->
+                        let itemlayout = rederItem item
+                        StackLayout.stackLayout
+                            [ StackLayout.GestureRecognizers
+                                [ TapGestureRecognizer.tapGestureRecognizer
+                                    [ TapGestureRecognizer.OnTapped(fun () -> dispatch (GoToDetailPage item)) ] ]
+                              StackLayout.Children
+                                  [ Frame.frame
+                                      [ Frame.CornerRadius 5.0
+                                        Frame.HeightRequest 250.0
+                                        Frame.Margin 8.0
+                                        Frame.Content itemlayout ] ] ] ], selectionMode = SelectionMode.Single)
+
+        let loadingView =
+            View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
+
+        let emptyView =
+            Label.label
+                [ Label.Text "No data to show"
+                  Label.HorizontalTextAlignment TextAlignment.Center
+                  Label.HorizontalLayout LayoutOptions.Center
+                  Label.VerticalLayout LayoutOptions.Center ]
+
+        let errorView errorMsg =
+            Label.label
+                [ Label.Text errorMsg
+                  Label.HorizontalTextAlignment TextAlignment.Center
+                  Label.HorizontalLayout LayoutOptions.Center
+                  Label.VerticalLayout LayoutOptions.Center ]
 
         let content =
-            StackLayout.stackLayout
-                [ StackLayout.Children
-                    [ View.CollectionView(items = renderEntries model.MusicList, selectionMode = SelectionMode.Single) ] ]
+            match model.MusicList with
+            | Empty -> emptyView
+            | Loading -> loadingView
+            | Content(Error errorMsg) -> errorView errorMsg
+            | Content(Ok items) -> renderEntries items
 
         ContentPage.contentPage
             [ ContentPage.Title "Home"

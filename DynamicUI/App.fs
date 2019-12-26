@@ -8,17 +8,10 @@ open Xamarin.Forms
 
 module App =
 
-    type Remote<'t> =
-        | Empty
-        | Loading
-        | LoadError of string
-        | Content of 't
-
     type Msg =
         | HomePageMsg of HomePage.Msg
         | DetailPageMsg of DetailPage.Msg
         | GoToDetailPage of Music
-        | GoToHomePage
 
     type Model =
         { HomePageModel: HomePage.Model
@@ -28,11 +21,10 @@ module App =
         { HomePage: ViewElement
           DetailPage: ViewElement option }
 
-    let initialModel =
-            { HomePageModel = HomePage.init
-              DetailPageModel = None }
-
-    let init() = initialModel, Cmd.none
+    let init() =
+            let hModel, cmd = HomePage.init
+            { HomePageModel = hModel
+              DetailPageModel = None }, Cmd.map HomePageMsg cmd
 
     let handleHomeExternalMsg externalMsg =
         match externalMsg with
@@ -44,14 +36,13 @@ module App =
     let update msg model =
         match msg with
         | HomePageMsg msg ->
-            let hModel, externalMsg = HomePage.update msg model.HomePageModel
+            let hModel, cmd, externalMsg = HomePage.update msg model.HomePageModel
             let externalHomeMsg = handleHomeExternalMsg externalMsg
-            { model with HomePageModel = hModel }, externalHomeMsg
+            { model with HomePageModel = hModel }, Cmd.batch[ Cmd.map HomePageMsg cmd ; externalHomeMsg]
+
         | DetailPageMsg _ ->
             { model with  DetailPageModel = None }, Cmd.none
-        | GoToHomePage ->
-            let homeModel = HomePage.init
-            { model with HomePageModel = homeModel }, Cmd.none
+
         | GoToDetailPage music ->
             let m = DetailPage.init music
             { model with DetailPageModel = Some m }, Cmd.none
