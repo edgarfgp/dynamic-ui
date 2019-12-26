@@ -9,6 +9,5 @@ module Models =
           Country: string }
 
     type Remote<'t> =
-        | Empty
         | Loading
         | Content of 't
