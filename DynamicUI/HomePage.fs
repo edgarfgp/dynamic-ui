@@ -91,20 +91,21 @@ module HomePage =
 
         let renderEntries items =
             View.RefreshView
-                (View.CollectionView
-                    (items =
-                        [ for item in items ->
-                            let itemlayout = rederItem item
-                            StackLayout.stackLayout
-                                [ StackLayout.GestureRecognizers
-                                    [ TapGestureRecognizer.tapGestureRecognizer
-                                        [ TapGestureRecognizer.OnTapped(fun () -> dispatch (GoToDetailPage item)) ] ]
-                                  StackLayout.Children
-                                      [ Frame.frame
-                                          [ Frame.CornerRadius 5.0
-                                            Frame.HeightRequest 250.0
-                                            Frame.Margin 8.0
-                                            Frame.Content itemlayout ] ] ] ], selectionMode = SelectionMode.Single),
+                (CollectionView.collectionView
+                    [ CollectionView.SelectionMode SelectionMode.Single
+                      CollectionView.Items
+                          [ for item in items ->
+                              let itemlayout = rederItem item
+                              StackLayout.stackLayout
+                                  [ StackLayout.GestureRecognizers
+                                      [ TapGestureRecognizer.tapGestureRecognizer
+                                          [ TapGestureRecognizer.OnTapped(fun () -> dispatch (GoToDetailPage item)) ] ]
+                                    StackLayout.Children
+                                        [ Frame.frame
+                                            [ Frame.CornerRadius 5.0
+                                              Frame.HeightRequest 250.0
+                                              Frame.Margin 8.0
+                                              Frame.Content itemlayout ] ] ] ] ],
                  isRefreshing = model.MusicDataIsRefreshing, refreshing = (fun () -> dispatch RefreshMusicData))
 
         let loadingView =

@@ -148,6 +148,10 @@
   <Import Project="..\packages\Xamarin.Forms.4.3.0.908675\build\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.4.3.0.908675\build\Xamarin.Forms.targets')" />
   <Import Project="..\.nuget\NuGet.targets" />
   <ItemGroup>
+    <Reference Include="Fabulous.SimpleElements, Version=0.40.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Fabulous.SimpleElements.0.40.0\lib\netstandard2.0\Fabulous.SimpleElements.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Fabulous.XamarinForms.FFImageLoading, Version=0.51.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\Fabulous.XamarinForms.FFImageLoading.0.51.0\lib\netstandard2.0\Fabulous.XamarinForms.FFImageLoading.dll</HintPath>
       <Private>True</Private>
