@@ -29,11 +29,6 @@ module DetailPage =
                           Image.Margin 16.0 ]
 
                       Label.label
-                          [ Label.Text model.ArtistName
-                            Label.Margin 16.0
-                            Label.HorizontalTextAlignment TextAlignment.Center ]
-
-                      Label.label
                           [ Label.Text model.Genre
                             Label.Margin 16.0
                             Label.HorizontalTextAlignment TextAlignment.Center ]
@@ -52,5 +47,5 @@ module DetailPage =
             ScrollView.scrollView [ ScrollView.Content detailEntries ]
 
         ContentPage.contentPage
-            [ ContentPage.Title "Music Detail"
+            [ ContentPage.Title Strings.DetailpageTitle
               ContentPage.Content content ]

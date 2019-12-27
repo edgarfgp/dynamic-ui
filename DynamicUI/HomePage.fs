@@ -14,40 +14,42 @@ module HomePage =
         | MusicLoadedError of string
         | GoToDetailPage of Music
         | RefreshMusicData
+        | MusicTextSearchChanged of string
 
     type Model =
         { MusicList: Remote<Result<Music list, string>>
           MusicDataIsRefreshing: bool }
 
-    [<Literal>]
-    let url = @"https://itunes.apple.com/search?term="""
-
-    type MusicData = JsonProvider<url>
-
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
 
-    let getMusicData (delay: int option) =
-        async {
-            match delay with
-            | Some delay -> do! Async.Sleep delay
-            | None -> do! Async.Sleep 0
+    let parseMusic musicList =
+        (JsonProvider<Strings.BaseUrl>.Parse musicList).Results
+        |> Array.toList
+        |> List.map (fun c ->
+            { ImageUrl = c.ArtworkUrl60
+              ArtistName = c.ArtistName
+              Genre = c.PrimaryGenreName
+              TrackName = (string) c.TrackName
+              Country = c.Country })
 
-            let! result = MusicData.AsyncGetSample()
-            return if result.ResultCount > 0 then
-                       let music =
-                           result.Results
-                           |> Array.toList
-                           |> List.map (fun c ->
-                               { ImageUrl = c.ArtworkUrl60
-                                 ArtistName = c.ArtistName
-                                 Genre = c.PrimaryGenreName
-                                 TrackName = (string) c.TrackName
-                                 Country = c.Country })
-                       MusicLoaded music
-                   else
-                       MusicLoadedError "Error getting data from iTunes"
+    let result musicEntries =
+        match musicEntries with
+        | Choice1Of2 musicList ->
+            MusicLoaded(parseMusic musicList)
+        | Choice2Of2 _ ->
+            MusicLoadedError Strings.Common_ErrorMessage
+
+    let getMusicDataSearch searchText =
+        async {
+            match searchText with
+            | Some searchText ->
+                let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrlWithParam searchText))
+                return (result musicEntries)
+            | None ->
+                let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
+                return (result musicEntries)
         }
 
     let init =
@@ -57,7 +59,7 @@ module HomePage =
     let update msg model =
         match msg with
         | MusicLoading ->
-            { model with MusicList = Loading }, Cmd.ofAsyncMsg (getMusicData None), ExternalMsg.NoOp
+            { model with MusicList = Loading }, Cmd.ofAsyncMsg (getMusicDataSearch None), ExternalMsg.NoOp
 
         | MusicLoaded data ->
             { model with
@@ -71,9 +73,13 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
         | RefreshMusicData ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicData (Some 3000)), ExternalMsg.NoOp
+            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch None), ExternalMsg.NoOp
+
+        | MusicTextSearchChanged searchText ->
+            model, Cmd.ofAsyncMsg (getMusicDataSearch (Some searchText)), ExternalMsg.NoOp
 
     let view model dispatch =
+        let searchMusic = MusicTextSearchChanged >> dispatch
 
         let rederItem item =
             StackLayout.stackLayout
@@ -90,23 +96,30 @@ module HomePage =
                             Label.Margin 16.0 ] ] ]
 
         let renderEntries items =
-            View.RefreshView
-                (CollectionView.collectionView
-                    [ CollectionView.SelectionMode SelectionMode.Single
-                      CollectionView.Items
-                          [ for item in items ->
-                              let itemlayout = rederItem item
-                              StackLayout.stackLayout
-                                  [ StackLayout.GestureRecognizers
-                                      [ TapGestureRecognizer.tapGestureRecognizer
-                                          [ TapGestureRecognizer.OnTapped(fun () -> dispatch (GoToDetailPage item)) ] ]
-                                    StackLayout.Children
-                                        [ Frame.frame
-                                            [ Frame.CornerRadius 5.0
-                                              Frame.HeightRequest 250.0
-                                              Frame.Margin 8.0
-                                              Frame.Content itemlayout ] ] ] ] ],
-                 isRefreshing = model.MusicDataIsRefreshing, refreshing = (fun () -> dispatch RefreshMusicData))
+            StackLayout.stackLayout
+                [ StackLayout.Children
+                    [ View.SearchBar
+                        (placeholder = Strings.SearchPlaceHolderMessage,
+                         textChanged = debounce 250 (fun args -> args.NewTextValue |> searchMusic))
+                      View.RefreshView
+                          (CollectionView.collectionView
+                              [ CollectionView.SelectionMode SelectionMode.Single
+                                CollectionView.Items
+                                    [ for item in items ->
+                                        let itemlayout = rederItem item
+                                        StackLayout.stackLayout
+                                            [ StackLayout.GestureRecognizers
+                                                [ TapGestureRecognizer.tapGestureRecognizer
+                                                    [ TapGestureRecognizer.OnTapped
+                                                        (fun () -> dispatch (GoToDetailPage item)) ] ]
+                                              StackLayout.Children
+                                                  [ Frame.frame
+                                                      [ Frame.CornerRadius 5.0
+                                                        Frame.HeightRequest 250.0
+                                                        Frame.Margin 8.0
+                                                        Frame.Content itemlayout ] ] ] ] ],
+                           isRefreshing = model.MusicDataIsRefreshing,
+                           refreshing = (fun () -> dispatch RefreshMusicData)) ] ]
 
         let loadingView =
             View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
@@ -125,5 +138,5 @@ module HomePage =
             | Content(Ok items) -> renderEntries items
 
         ContentPage.contentPage
-            [ ContentPage.Title "Home"
+            [ ContentPage.Title Strings.HomePageTitle
               ContentPage.Content(content) ]

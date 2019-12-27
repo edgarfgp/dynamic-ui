@@ -17,8 +17,6 @@ module App =
     type Model =
         { HomePageModel: HomePage.Model
           DetailPageModel: DetailPage.Model option
-          // Workaround Cmd limitation -- Can not pop a page in page stack and send Cmd at the same time
-          // Otherwise it would pop pages 2 times in NavigationPage
           WorkaroundNavPageBug: bool
           WorkaroundNavPageBugPendingCmd: Cmd<Msg> }
 
@@ -65,7 +63,6 @@ module App =
         | NavigationPopped ->
             match model.WorkaroundNavPageBug with
             | true ->
-                // Do not pop pages if already done manually
                 let newModel =
                     { model with
                         WorkaroundNavPageBug = false
@@ -83,7 +80,6 @@ module App =
         | Some detailPage -> [ homePage ; detailPage ]
 
     let view model dispatch =
-
         let homePage = HomePage.view model.HomePageModel (HomePageMsg >> dispatch)
 
         let detailPage =
@@ -107,6 +103,7 @@ type App () as app =
 
     let runner =
         App.program
+
 #if DEBUG
         |> Program.withConsoleTrace
 
@@ -115,4 +112,5 @@ type App () as app =
 
 #if DEBUG
     do runner.EnableLiveUpdate()
+
 #endif

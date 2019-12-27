@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Strings.fs" />
     <Content Include="Music.json" />
     <Compile Include="Models.fs" />
     <Compile Include="DetailPage.fs" />
