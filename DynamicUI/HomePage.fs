@@ -18,7 +18,8 @@ module HomePage =
 
     type Model =
         { MusicList: Remote<Result<Music list, string>>
-          MusicDataIsRefreshing: bool }
+          MusicDataIsRefreshing: bool
+          SearchText: string }
 
     type ExternalMsg =
         | NoOp
@@ -34,27 +35,29 @@ module HomePage =
               TrackName = (string) c.TrackName
               Country = c.Country })
 
-    let result musicEntries =
+    let getMusicDataSearchMapper musicEntries =
         match musicEntries with
         | Choice1Of2 musicList ->
             MusicLoaded(parseMusic musicList)
         | Choice2Of2 _ ->
-            MusicLoadedError Strings.Common_ErrorMessage
+            MusicLoadedError Strings.CommonErrorMessage
 
     let getMusicDataSearch searchText =
         async {
+            do! Async.Sleep 2000
             match searchText with
             | Some searchText ->
                 let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrlWithParam searchText))
-                return (result musicEntries)
+                return getMusicDataSearchMapper musicEntries
             | None ->
                 let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
-                return (result musicEntries)
+                return getMusicDataSearchMapper musicEntries
         }
 
     let init =
         { MusicList = Remote.Loading
-          MusicDataIsRefreshing = false }, Cmd.ofMsg MusicLoading
+          MusicDataIsRefreshing = false
+          SearchText = "" }, Cmd.ofMsg MusicLoading
 
     let update msg model =
         match msg with
@@ -73,13 +76,37 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
         | RefreshMusicData ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch None), ExternalMsg.NoOp
+            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch (Some model.SearchText)),
+            ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
-            model, Cmd.ofAsyncMsg (getMusicDataSearch (Some searchText)), ExternalMsg.NoOp
+            { model with SearchText = searchText }, Cmd.ofAsyncMsg (getMusicDataSearch (Some searchText)),
+            ExternalMsg.NoOp
 
     let view model dispatch =
         let searchMusic = MusicTextSearchChanged >> dispatch
+
+        let loadingView =
+            View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
+
+        let errorView errorMsg =
+            StackLayout.stackLayout
+                [ StackLayout.VerticalLayout LayoutOptions.Center
+                  StackLayout.Children
+                      [ Label.label
+                          [ Label.Text errorMsg
+                            Label.HorizontalTextAlignment TextAlignment.Center ]
+
+                        Button.button
+                            [ Button.Text Strings.TryAgainText
+                              Button.OnClick(fun _ -> dispatch RefreshMusicData) ] ] ]
+
+        let emptyView =
+            Label.label
+                [ Label.Text Strings.EmptyResultMessage
+                  Label.HorizontalTextAlignment TextAlignment.Center
+                  Label.HorizontalLayout LayoutOptions.Center
+                  Label.VerticalLayout LayoutOptions.Center ]
 
         let rederItem item =
             StackLayout.stackLayout
@@ -104,6 +131,7 @@ module HomePage =
                       View.RefreshView
                           (CollectionView.collectionView
                               [ CollectionView.SelectionMode SelectionMode.Single
+                                CollectionView.EmptyView emptyView
                                 CollectionView.Items
                                     [ for item in items ->
                                         let itemlayout = rederItem item
@@ -120,16 +148,6 @@ module HomePage =
                                                         Frame.Content itemlayout ] ] ] ] ],
                            isRefreshing = model.MusicDataIsRefreshing,
                            refreshing = (fun () -> dispatch RefreshMusicData)) ] ]
-
-        let loadingView =
-            View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
-
-        let errorView errorMsg =
-            Label.label
-                [ Label.Text errorMsg
-                  Label.HorizontalTextAlignment TextAlignment.Center
-                  Label.HorizontalLayout LayoutOptions.Center
-                  Label.VerticalLayout LayoutOptions.Center ]
 
         let content =
             match model.MusicList with

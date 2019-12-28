@@ -6,7 +6,7 @@ module Strings =
     [<Literal>]
     let BaseUrl = @"https://itunes.apple.com/search?term="""
 
-    let Common_ErrorMessage = "An error has occured. Please try again later."
+    let CommonErrorMessage = "An error has occurred."
 
     let BaseUrlWithParam = sprintf @"https://itunes.apple.com/search?term=""%s"
 
@@ -14,3 +14,7 @@ module Strings =
 
     let HomePageTitle = "Home"
     let DetailpageTitle = "Music Detail"
+
+    let EmptyResultMessage = "No results available for the current search"
+
+    let TryAgainText = "Try again"
