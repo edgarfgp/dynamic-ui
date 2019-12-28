@@ -24,7 +24,7 @@ module App =
         { HomePage: ViewElement
           DetailPage: ViewElement option }
 
-    let init() =
+    let init () =
             let hModel, cmd = HomePage.init
             { HomePageModel = hModel
               DetailPageModel = None
@@ -96,13 +96,15 @@ module App =
             NavigationPage.OnPopped  (fun _ -> dispatch NavigationPopped)
             NavigationPage.Pages (getPages allPages) ]
 
-    let program = Program.mkProgram init update view
-
-type App () as app =
+type App (dbPath) as app =
     inherit Application ()
 
+    let init = App.init
+    let update = App.update
+    let view = App.view
+
     let runner =
-        App.program
+        Program.mkProgram init update view
 
 #if DEBUG
         |> Program.withConsoleTrace
