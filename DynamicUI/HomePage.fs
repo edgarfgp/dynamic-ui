@@ -44,6 +44,7 @@ module HomePage =
 
     let getMusicDataSearch searchText =
         async {
+            //Adding some delay for testing purpose
             do! Async.Sleep 2000
             match searchText with
             | Some searchText ->
