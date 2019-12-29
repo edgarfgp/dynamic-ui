@@ -125,7 +125,7 @@ module HomePage =
                 [ StackLayout.Children
                     [ View.UnlinedSearchBar
                         (placeholder = Strings.SearchPlaceHolderMessage,
-                         textChanged = debounce 250 (fun args -> args.NewTextValue |> searchMusic),
+                         textChanged = debounce 200 (fun args -> args.NewTextValue |> searchMusic),
                          margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
                       View.RefreshView
                           (CollectionView.collectionView
