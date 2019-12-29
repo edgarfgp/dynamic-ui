@@ -1,5 +1,6 @@
 namespace DynamicUI
 
+open DynamicUI.Controls
 open DynamicUI.Models
 open FSharp.Data
 open Fabulous
@@ -122,12 +123,15 @@ module HomePage =
         let renderEntries items =
             StackLayout.stackLayout
                 [ StackLayout.Children
-                    [ View.SearchBar
+                    [ View.UnlinedSearchBar
                         (placeholder = Strings.SearchPlaceHolderMessage,
-                         textChanged = debounce 250 (fun args -> args.NewTextValue |> searchMusic))
+                         textChanged = debounce 250 (fun args -> args.NewTextValue |> searchMusic),
+                         margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
                       View.RefreshView
                           (CollectionView.collectionView
                               [ CollectionView.SelectionMode SelectionMode.Single
+                                CollectionView.MarginLeft 8.0
+                                CollectionView.MarginRight 8.0
                                 CollectionView.EmptyView emptyView
                                 CollectionView.Items
                                     [ for item in items ->
@@ -139,7 +143,7 @@ module HomePage =
                                                         (fun () -> dispatch (GoToDetailPage item)) ] ]
                                               StackLayout.Children
                                                   [ Frame.frame
-                                                      [ Frame.CornerRadius 5.0
+                                                      [ Frame.CornerRadius 4.0
                                                         Frame.HeightRequest 250.0
                                                         Frame.Margin 8.0
                                                         Frame.Content itemlayout ] ] ] ] ],
