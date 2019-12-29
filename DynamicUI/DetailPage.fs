@@ -34,12 +34,7 @@ module DetailPage =
                             Label.HorizontalTextAlignment TextAlignment.Center ]
 
                       Label.label
-                          [ Label.Text model.TrackName
-                            Label.Margin 16.0
-                            Label.HorizontalTextAlignment TextAlignment.Center ]
-
-                      Label.label
-                          [ Label.Text model.Country
+                          [ Label.Text model.ArtistName
                             Label.Margin 16.0
                             Label.HorizontalTextAlignment TextAlignment.Center ] ] ]
 

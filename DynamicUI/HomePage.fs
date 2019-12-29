@@ -2,9 +2,9 @@ namespace DynamicUI
 
 open DynamicUI.Models
 open FSharp.Data
-open FSharp.Data.Runtime.StructuralInference
 open Fabulous
 open Fabulous.XamarinForms
+open Thoth.Json.Net
 open Xamarin.Forms
 
 module HomePage =
@@ -25,20 +25,16 @@ module HomePage =
         | NoOp
         | NavigateToDetail of Music
 
-    let parseMusic musicList =
-        (JsonProvider<Strings.BaseUrl>.Parse musicList).Results
-        |> Array.toList
-        |> List.map (fun c ->
-            { ImageUrl = c.ArtworkUrl60
-              ArtistName = c.ArtistName
-              Genre = c.PrimaryGenreName
-              TrackName = (string) c.TrackName
-              Country = c.Country })
+    let parseMusic (musicList: string) =
+        let parsedResult = Decode.fromString MusicList.Decoder musicList
+        match parsedResult with
+        | Ok itemList -> itemList
+        | Error ex -> failwith ex
 
     let getMusicDataSearchMapper musicEntries =
         match musicEntries with
         | Choice1Of2 musicList ->
-            MusicLoaded(parseMusic musicList)
+            MusicLoaded (parseMusic musicList).Music
         | Choice2Of2 _ ->
             MusicLoadedError Strings.CommonErrorMessage
 

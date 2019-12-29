@@ -205,6 +205,10 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="Thoth.Json.Net, Version=3.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Thoth.Json.Net.3.6.0\lib\netstandard2.0\Thoth.Json.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="WebP.Touch, Version=1.0.6628.22311, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\WebP.Touch.1.0.8\lib\Xamarin.iOS10\WebP.Touch.dll</HintPath>
       <Private>True</Private>

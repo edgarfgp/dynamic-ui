@@ -3,7 +3,6 @@ namespace DynamicUI
 [<RequireQualifiedAccess>]
 module Strings =
 
-    [<Literal>]
     let BaseUrl = @"https://itunes.apple.com/search?term="""
 
     let CommonErrorMessage = "An error has occurred."
