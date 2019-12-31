@@ -1,7 +1,6 @@
 namespace DynamicUI.iOS
 
 open UIKit
-open Xamarin.Forms
 open Xamarin.Forms.Platform.iOS
 
 type UnlinedSearchBarRenderer() =
