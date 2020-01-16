@@ -19,7 +19,6 @@
     <PackageReference Include="Fabulous.LiveUpdate" Version="0.51.0" />
     <PackageReference Include="Fabulous.SimpleElements" Version="0.40.0" />
     <PackageReference Include="Fabulous.XamarinForms.FFImageLoading" Version="0.51.0" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
     <PackageReference Include="Thoth.Json.Net" Version="3.6.0" />
     <PackageReference Include="Xamarin.Forms" Version="4.3.0.908675" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
