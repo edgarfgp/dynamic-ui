@@ -24,17 +24,17 @@ module DetailPage =
             StackLayout.stackLayout
                 [ StackLayout.Children
                     [ Image.image
-                        [ Image.Source(Image.Path(model.ImageUrl))
+                        [ Image.Source(Image.Path(model.artworkUrl60))
                           Image.Height 200.0
                           Image.Margin 16.0 ]
 
                       Label.label
-                          [ Label.Text model.Genre
+                          [ Label.Text model.primaryGenreName
                             Label.Margin 16.0
                             Label.HorizontalTextAlignment TextAlignment.Center ]
 
                       Label.label
-                          [ Label.Text model.ArtistName
+                          [ Label.Text model.artistName
                             Label.Margin 16.0
                             Label.HorizontalTextAlignment TextAlignment.Center ] ] ]
 

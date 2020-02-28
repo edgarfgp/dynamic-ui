@@ -3,9 +3,9 @@ namespace DynamicUI
 open DynamicUI.Controls
 open DynamicUI.Models
 open FSharp.Data
+open FSharp.Json
 open Fabulous
 open Fabulous.XamarinForms
-open Thoth.Json.Net
 open Xamarin.Forms
 
 module HomePage =
@@ -26,16 +26,11 @@ module HomePage =
         | NoOp
         | NavigateToDetail of Music
 
-    let parseMusic (musicList: string) =
-        let parsedResult = Decode.fromString MusicList.Decoder musicList
-        match parsedResult with
-        | Ok itemList -> itemList
-        | Error ex -> failwith ex
-
     let getMusicDataSearchMapper musicEntries =
         match musicEntries with
         | Choice1Of2 musicList ->
-            MusicLoaded (parseMusic musicList).Music
+            let musicList = Json.deserialize<MusicList> musicList
+            MusicLoaded musicList.results
         | Choice2Of2 _ ->
             MusicLoadedError Strings.CommonErrorMessage
 
@@ -110,13 +105,13 @@ module HomePage =
             StackLayout.stackLayout
                 [ StackLayout.Children
                     [ Image.image
-                        [ Image.Source(Image.Path(item.ImageUrl))
+                        [ Image.Source(Image.Path(item.artworkUrl60))
                           Image.MarginTop 16.0
                           Image.HorizontalLayout LayoutOptions.FillAndExpand
                           Image.VerticalLayout LayoutOptions.FillAndExpand ]
 
                       Label.label
-                          [ Label.Text item.ArtistName
+                          [ Label.Text item.artistName
                             Label.HorizontalTextAlignment TextAlignment.Center
                             Label.Margin 16.0 ] ] ]
 

@@ -1,32 +1,30 @@
 namespace DynamicUI
 
-open Thoth.Json.Net
-
-
 module Models =
 
     type Music =
-        { TrackId: int
-          ArtistId: int
-          ImageUrl: string
-          ArtistName: string
-          Genre: string }
-        static member Decoder: Decoder<Music> =
-            Decode.object (fun get ->
-                { ImageUrl = get.Required.Field "artworkUrl60" Decode.string
-                  ArtistName = get.Required.Field "artistName" Decode.string
-                  Genre = get.Required.Field "primaryGenreName" Decode.string
-                  TrackId = get.Optional.Field "trackId" Decode.int |> Option.defaultValue 0
-                  ArtistId = get.Optional.Field "artistId" Decode.int |> Option.defaultValue 0 })
+        { trackId: int option
+          artistId: int option
+          artworkUrl60: string
+          artistName: string
+          primaryGenreName: string }
+
+        static member CreateMusic(?imageUrl, ?artistName, ?genre, ?trackId, ?artistId) =
+            let initMember x = Option.fold (fun state param -> param) <| x
+            { artworkUrl60 = initMember "" imageUrl
+              artistName = initMember "" artistName
+              primaryGenreName = initMember "" genre
+              trackId = initMember (Some 0) trackId
+              artistId = initMember (Some 0) artistId }
 
     type MusicList =
-        { MusicCount: int
-          Music: Music list }
+        { resultCount: int
+          results: Music list }
 
-        static member Decoder: Decoder<MusicList> =
-            Decode.object (fun get ->
-                { MusicCount = get.Required.Field "resultCount" Decode.int
-                  Music = get.Required.Field "results" (Decode.list Music.Decoder) })
+        static member CreateMusicList(?musicCount, ?music) =
+            let initMember x = Option.fold (fun state param -> param) <| x
+            { resultCount = initMember 0 musicCount
+              results = initMember [ { artworkUrl60 = "" ; artistName = "" ; primaryGenreName = "" ; trackId =  Some 0 ; artistId= Some 0 } ] music }
 
     type Remote<'t> =
         | Loading

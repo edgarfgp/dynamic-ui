@@ -15,15 +15,14 @@
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fabulous" Version="0.51.0" />
-    <PackageReference Include="Fabulous.LiveUpdate" Version="0.51.0" />
+    <PackageReference Include="Fabulous" Version="0.52.0" />
+    <PackageReference Include="Fabulous.LiveUpdate" Version="0.52.0" />
     <PackageReference Include="Fabulous.SimpleElements" Version="0.40.0" />
-    <PackageReference Include="Fabulous.XamarinForms.FFImageLoading" Version="0.51.0" />
-    <PackageReference Include="Thoth.Json.Net" Version="3.6.0" />
-    <PackageReference Include="Xamarin.Forms" Version="4.3.0.908675" />
+    <PackageReference Include="FSharp.Json" Version="0.4.0" />
+    <PackageReference Include="Xamarin.Forms" Version="4.4.0.991757" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
-    <PackageReference Include="Fabulous.XamarinForms" Version="0.51.0" />
-    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.51.0" />
+    <PackageReference Include="Fabulous.XamarinForms" Version="0.52.0" />
+    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.52.0" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="FSharp.Data" Version="3.3.2" />
