@@ -2,8 +2,6 @@ namespace DynamicUI
 
 open DynamicUI.Controls
 open DynamicUI.Models
-open FSharp.Data
-open FSharp.Json
 open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
@@ -36,16 +34,14 @@ module HomePage =
 
     let getMusicDataSearch =
         async {
-            let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
+            let! musicEntries = NetworkService.getMusicDataSearch None
             let searchResult =
-                match musicEntries with
-                | Choice1Of2 musicList ->
-                    let musicList = Json.deserialize<MusicList> musicList
-                    mutableMusicList <- musicList.results
-                    MusicLoaded musicList.results
-                | Choice2Of2 _ ->
+                match musicEntries.Length with
+                | x when x > 0 ->
+                    mutableMusicList <- musicEntries
+                    MusicLoaded musicEntries
+                | _ ->
                     MusicLoadedError Strings.CommonErrorMessage
-
             return searchResult
         }
 
@@ -57,16 +53,14 @@ module HomePage =
                 match result.Length with
                 | x when x > 0 -> return MusicLoaded result
                 | _ ->
-                    let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrlWithParam text))
+                    let! musicEntries = NetworkService.getMusicDataSearch (Some text)
                     let searchResult =
-                        match musicEntries with
-                        | Choice1Of2 musicList ->
-                            let musicList = Json.deserialize<MusicList> musicList
-                            mutableMusicList <- musicList.results
-                            MusicLoaded musicList.results
-                        | Choice2Of2 _ ->
+                        match musicEntries.Length with
+                        | x when x > 0 ->
+                        mutableMusicList <- musicEntries
+                        MusicLoaded musicEntries
+                        | _ ->
                             MusicLoadedError Strings.CommonErrorMessage
-
                     return searchResult
             | _ ->
                 return MusicLoaded mutableMusicList

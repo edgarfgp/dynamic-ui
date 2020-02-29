@@ -3,8 +3,6 @@ namespace DynamicUI
 [<RequireQualifiedAccess>]
 module Strings =
 
-    let BaseUrl = @"https://itunes.apple.com/search?term="""
-
     let CommonErrorMessage = "An error has occurred."
 
     let BaseUrlWithParam = sprintf @"https://itunes.apple.com/search?term=""%s"
