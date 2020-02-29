@@ -89,23 +89,19 @@ module App =
             { HomePage = homePage
               DetailPage = detailPage }
 
-        NavigationPage.navigationPage[
-            NavigationPage.UseSafeArea true
-            NavigationPage.BarTextColor Color.Azure
-            NavigationPage.BarBackgroundColor Color.LightBlue
-            NavigationPage.OnPopped  (fun _ -> dispatch NavigationPopped)
-            NavigationPage.Pages (getPages allPages) ]
+        View.NavigationPage(
+            useSafeArea = true,
+            barTextColor = Color.Azure,
+            barBackgroundColor = Color.LightBlue,
+            popped =(fun _ -> dispatch NavigationPopped),
+            pages = (getPages allPages))
 
-type App (dbPath) as app =
+    let program = Program.mkProgram init update view
+type App () as app =
     inherit Application ()
 
-    let init = App.init
-    let update = App.update
-    let view = App.view
-
     let runner =
-        Program.mkProgram init update view
-
+        App.program
 #if DEBUG
         |> Program.withConsoleTrace
 

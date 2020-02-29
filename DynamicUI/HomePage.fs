@@ -57,15 +57,14 @@ module HomePage =
                     let searchResult =
                         match musicEntries.Length with
                         | x when x > 0 ->
-                        mutableMusicList <- musicEntries
-                        MusicLoaded musicEntries
+                            mutableMusicList <- musicEntries
+                            MusicLoaded musicEntries
                         | _ ->
                             MusicLoadedError Strings.CommonErrorMessage
                     return searchResult
             | _ ->
                 return MusicLoaded mutableMusicList
         }
-
 
     let init =
         { MusicList = Remote.Loading
@@ -102,67 +101,73 @@ module HomePage =
             View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
 
         let errorView errorMsg =
-            StackLayout.stackLayout
-                [ StackLayout.VerticalLayout LayoutOptions.Center
-                  StackLayout.Children
-                      [ Label.label
-                          [ Label.Text errorMsg
-                            Label.HorizontalTextAlignment TextAlignment.Center ]
-
-                        Button.button
-                            [ Button.Text Strings.TryAgainText
-                              Button.OnClick(fun _ -> dispatch RefreshMusicData) ] ] ]
+            View.StackLayout(
+                verticalOptions = LayoutOptions.Center,
+                children =
+                    [ View.Label(
+                        text = errorMsg,
+                          horizontalTextAlignment = TextAlignment.Center)
+                      View.Button(
+                        text = Strings.TryAgainText,
+                        command = (fun _ -> dispatch RefreshMusicData))
+                    ]
+                )
 
         let emptyView =
-            Label.label
-                [ Label.Text Strings.EmptyResultMessage
-                  Label.HorizontalTextAlignment TextAlignment.Center
-                  Label.HorizontalLayout LayoutOptions.Center
-                  Label.VerticalLayout LayoutOptions.Center ]
+            View.Label(
+                text = Strings.EmptyResultMessage,
+                horizontalTextAlignment = TextAlignment.Center,
+                horizontalOptions = LayoutOptions.Center,
+                verticalOptions = LayoutOptions.Center)
 
         let rederItem item =
-            StackLayout.stackLayout
-                [ StackLayout.Children
-                    [ Image.image
-                        [ Image.Source(Image.Path(item.artworkUrl60))
-                          Image.MarginTop 16.0
-                          Image.HorizontalLayout LayoutOptions.FillAndExpand
-                          Image.VerticalLayout LayoutOptions.FillAndExpand ]
+            View.StackLayout(
+                children =
+                    [ View.Image(
+                        source = Path item.artworkUrl60,
+                        margin = Thickness(16.),
+                        horizontalOptions = LayoutOptions.FillAndExpand,
+                        verticalOptions = LayoutOptions.FillAndExpand)
 
-                      Label.label
-                          [ Label.Text item.artistName
-                            Label.HorizontalTextAlignment TextAlignment.Center
-                            Label.Margin 16.0 ] ] ]
+                      View.Label(
+                        text = item.artistName,
+                        horizontalTextAlignment = TextAlignment.Center,
+                        margin = Thickness(16.)) ])
 
         let renderEntries items =
-            StackLayout.stackLayout
-                [ StackLayout.Children
-                    [ View.UnlinedSearchBar
-                        (placeholder = Strings.SearchPlaceHolderMessage,
-                         textChanged = debounce 200 (fun args -> args.NewTextValue |> searchMusic),
-                         margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
-                      View.RefreshView
-                          (CollectionView.collectionView
-                              [ CollectionView.SelectionMode SelectionMode.Single
-                                CollectionView.MarginLeft 8.0
-                                CollectionView.MarginRight 8.0
-                                CollectionView.EmptyView emptyView
-                                CollectionView.Items
-                                    [ for item in items ->
+            View.StackLayout(
+                children =
+                    [
+                        View.UnlinedSearchBar(
+                             placeholder = Strings.SearchPlaceHolderMessage,
+                             textChanged = debounce 200 (fun args -> args.NewTextValue |> searchMusic),
+                             margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
+
+                        View.RefreshView(
+                            content =
+                                View.CollectionView(
+                                    selectionMode = SelectionMode.Single,
+                                    margin = Thickness(8., 0., 8., 0.),
+                                    emptyView = emptyView,
+                                    items = [
+                                        for item in items ->
                                         let itemlayout = rederItem item
-                                        StackLayout.stackLayout
-                                            [ StackLayout.GestureRecognizers
-                                                [ TapGestureRecognizer.tapGestureRecognizer
-                                                    [ TapGestureRecognizer.OnTapped
-                                                        (fun () -> dispatch (GoToDetailPage item)) ] ]
-                                              StackLayout.Children
-                                                  [ Frame.frame
-                                                      [ Frame.CornerRadius 4.0
-                                                        Frame.HeightRequest 250.0
-                                                        Frame.Margin 8.0
-                                                        Frame.Content itemlayout ] ] ] ] ],
-                           isRefreshing = model.MusicDataIsRefreshing,
-                           refreshing = (fun () -> dispatch RefreshMusicData)) ] ]
+
+                                        View.StackLayout(
+                                            gestureRecognizers = [
+                                                View.TapGestureRecognizer(command = fun () -> dispatch (GoToDetailPage item))
+                                            ],
+                                            children = [
+                                                View.Frame(
+                                                    cornerRadius = 4.,
+                                                    height = 250.,
+                                                    margin = Thickness(8.),
+                                                    content = itemlayout)
+                                            ]
+                                        )
+                                    ]),
+                            isRefreshing = model.MusicDataIsRefreshing,
+                            refreshing = (fun () -> dispatch RefreshMusicData)) ])
 
         let content =
             match model.MusicList with
@@ -170,6 +175,6 @@ module HomePage =
             | Content(Error errorMsg) -> errorView errorMsg
             | Content(Ok items) -> renderEntries items
 
-        ContentPage.contentPage
-            [ ContentPage.Title Strings.HomePageTitle
-              ContentPage.Content(content) ]
+        View.ContentPage(
+            title = Strings.HomePageTitle,
+            content = content)

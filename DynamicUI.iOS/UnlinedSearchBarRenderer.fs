@@ -3,16 +3,17 @@ namespace DynamicUI.iOS
 open UIKit
 open Xamarin.Forms.Platform.iOS
 
-type UnlinedSearchBarRenderer() =
+type UnlinedSearchBarRenderer() as self =
     inherit SearchBarRenderer()
 
-    override this.OnElementChanged(e) =
+    override __.OnElementChanged(e) =
         base.OnElementChanged(e)
 
         if (e.NewElement <> null) then
-            this.Control.SearchBarStyle <- UISearchBarStyle.Minimal
-            this.Control.BarTintColor <- UIColor.Clear
-            this.Control.BackgroundColor <- UIColor.Clear
+            self.Control.SearchBarStyle <- UISearchBarStyle.Minimal
+            self.Control.BarTintColor <- UIColor.Clear
+            self.Control.BackgroundColor <- UIColor.Clear
+
         else
             ()
 

@@ -21,26 +21,29 @@ module DetailPage =
     let view model _ =
 
         let detailEntries =
-            StackLayout.stackLayout
-                [ StackLayout.Children
-                    [ Image.image
-                        [ Image.Source(Image.Path(model.artworkUrl60))
-                          Image.Height 200.0
-                          Image.Margin 16.0 ]
-
-                      Label.label
-                          [ Label.Text model.primaryGenreName
-                            Label.Margin 16.0
-                            Label.HorizontalTextAlignment TextAlignment.Center ]
-
-                      Label.label
-                          [ Label.Text model.artistName
-                            Label.Margin 16.0
-                            Label.HorizontalTextAlignment TextAlignment.Center ] ] ]
-
+            View.StackLayout(
+                children =
+                    [
+                        View.Image(
+                            source = (Image.Path(model.artworkUrl60)),
+                            height = 200.0,
+                            margin = Thickness(16.))
+                        
+                        View.Label(
+                            text = model.primaryGenreName,
+                            margin = Thickness(16.),
+                            horizontalTextAlignment = TextAlignment.Center)
+                        
+                        View.Label(
+                            text = model.artistName,
+                            margin = Thickness(16.),
+                            horizontalTextAlignment = TextAlignment.Center)
+                    ]
+                )
+            
         let content =
-            ScrollView.scrollView [ ScrollView.Content detailEntries ]
+            View.ScrollView(content = detailEntries)
 
-        ContentPage.contentPage
-            [ ContentPage.Title Strings.DetailpageTitle
-              ContentPage.Content content ]
+        View.ContentPage(
+              title = Strings.DetailpageTitle,
+              content = content)
