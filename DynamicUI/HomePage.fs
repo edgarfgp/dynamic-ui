@@ -26,13 +26,7 @@ module HomePage =
         | NoOp
         | NavigateToDetail of Music
 
-    let getMusicDataSearchMapper musicEntries =
-        match musicEntries with
-        | Choice1Of2 musicList ->
-            let musicList = Json.deserialize<MusicList> musicList
-            MusicLoaded musicList.results
-        | Choice2Of2 _ ->
-            MusicLoadedError Strings.CommonErrorMessage
+    let mutable mutableMusicList : Music list = []
 
     let rec filterMusic predicate musicList : Music list =
         match musicList with
@@ -43,8 +37,41 @@ module HomePage =
     let getMusicDataSearch =
         async {
             let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
-            return getMusicDataSearchMapper musicEntries
+            let searchResult =
+                match musicEntries with
+                | Choice1Of2 musicList ->
+                    let musicList = Json.deserialize<MusicList> musicList
+                    mutableMusicList <- musicList.results
+                    MusicLoaded musicList.results
+                | Choice2Of2 _ ->
+                    MusicLoadedError Strings.CommonErrorMessage
+
+            return searchResult
         }
+
+    let filterOrFetchMusicData searchText=
+         async {
+            match searchText with
+            | Some text when text <> "" ->
+                let result = filterMusic (fun c -> c.artistName.ToLower().Contains(text.ToLower())) mutableMusicList
+                match result.Length with
+                | x when x > 0 -> return MusicLoaded result
+                | _ ->
+                    let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrlWithParam text))
+                    let searchResult =
+                        match musicEntries with
+                        | Choice1Of2 musicList ->
+                            let musicList = Json.deserialize<MusicList> musicList
+                            mutableMusicList <- musicList.results
+                            MusicLoaded musicList.results
+                        | Choice2Of2 _ ->
+                            MusicLoadedError Strings.CommonErrorMessage
+
+                    return searchResult
+            | _ ->
+                return MusicLoaded mutableMusicList
+        }
+
 
     let init =
         { MusicList = Remote.Loading
@@ -72,9 +99,7 @@ module HomePage =
             ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
-
-            { model with SearchText = searchText }, Cmd.ofAsyncMsg (getMusicDataSearch),
-            ExternalMsg.NoOp
+            { model with SearchText = searchText}, Cmd.ofAsyncMsg(filterOrFetchMusicData (Some searchText)), ExternalMsg.NoOp
 
     let view model dispatch =
         let searchMusic = MusicTextSearchChanged >> dispatch
