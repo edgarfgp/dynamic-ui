@@ -34,17 +34,16 @@ module HomePage =
         | Choice2Of2 _ ->
             MusicLoadedError Strings.CommonErrorMessage
 
-    let getMusicDataSearch searchText =
+    let rec filterMusic predicate musicList : Music list =
+        match musicList with
+        | x::xs when predicate x -> x::(filterMusic predicate xs)
+        | _::xs -> filterMusic predicate xs
+        | [] -> []
+
+    let getMusicDataSearch =
         async {
-            //Adding some delay for testing purpose
-            do! Async.Sleep 2000
-            match searchText with
-            | Some searchText ->
-                let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrlWithParam searchText))
-                return getMusicDataSearchMapper musicEntries
-            | None ->
-                let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
-                return getMusicDataSearchMapper musicEntries
+            let! musicEntries = Async.Catch(Http.AsyncRequestString(Strings.BaseUrl))
+            return getMusicDataSearchMapper musicEntries
         }
 
     let init =
@@ -55,7 +54,7 @@ module HomePage =
     let update msg model =
         match msg with
         | MusicLoading ->
-            { model with MusicList = Loading }, Cmd.ofAsyncMsg (getMusicDataSearch None), ExternalMsg.NoOp
+            { model with MusicList = Loading }, Cmd.ofAsyncMsg (getMusicDataSearch), ExternalMsg.NoOp
 
         | MusicLoaded data ->
             { model with
@@ -69,11 +68,12 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
         | RefreshMusicData ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch (Some model.SearchText)),
+            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch),
             ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
-            { model with SearchText = searchText }, Cmd.ofAsyncMsg (getMusicDataSearch (Some searchText)),
+
+            { model with SearchText = searchText }, Cmd.ofAsyncMsg (getMusicDataSearch),
             ExternalMsg.NoOp
 
     let view model dispatch =
