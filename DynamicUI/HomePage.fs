@@ -177,4 +177,5 @@ module HomePage =
 
         View.ContentPage(
             title = Strings.HomePageTitle,
+            hasNavigationBar = false,
             content = content)

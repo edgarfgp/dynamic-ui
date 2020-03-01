@@ -13,6 +13,7 @@
     <Compile Include="NetworkService.fs" />
     <Compile Include="DetailPage.fs" />
     <Compile Include="HomePage.fs" />
+    <Compile Include="SearchPage.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
