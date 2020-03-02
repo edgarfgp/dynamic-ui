@@ -2,29 +2,38 @@ namespace DynamicUI
 
 open Fabulous
 open Fabulous.XamarinForms
+open Models
 open Xamarin.Forms
 
 module SearchPage =
 
     type Msg =
-        | GoToFollowerLisPage of string
+        | UserEntered of string
 
     type ExternalMsg =
         | NoOp
-        | NavigateToFollowersList of string
 
     type Model =
         { UserName : string }
 
     let init =
-        { UserName = "" }, Cmd.none
+        {UserName = "" }, Cmd.none
+
+    let getUserInfo userName =
+        match (NetworkService.getUserInfo userName) with
+        | Ok _ ->
+           ()
+        | Error _ ->
+           ()
 
     let update msg model =
         match msg with
-        | GoToFollowerLisPage userName ->
-            { model with UserName = userName }, Cmd.none, ExternalMsg.NoOp
+        | UserEntered userName ->
+            { model with UserName = userName  }, Cmd.none, ExternalMsg.NoOp
 
-    let view _ _ =
+    let view _ dispatch =
+
+        let userEntered = UserEntered >> dispatch
 
         let content =
             View.FlexLayout(
@@ -42,6 +51,7 @@ module SearchPage =
                     View.Entry(
                         placeholder = "Enter a username",
                         height = 40.,
+                        completed = (fun args -> args |> userEntered),
                         clearButtonVisibility = ClearButtonVisibility.WhileEditing,
                         returnType = ReturnType.Go)
 
