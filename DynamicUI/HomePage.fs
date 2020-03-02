@@ -39,6 +39,7 @@ module HomePage =
                 match musicEntries.Length with
                 | x when x > 0 ->
                     mutableMusicList <- musicEntries
+                    printfn "------Using API----"
                     MusicLoaded musicEntries
                 | _ ->
                     MusicLoadedError Strings.CommonErrorMessage
@@ -51,13 +52,16 @@ module HomePage =
             | Some text when text <> "" ->
                 let result = filterMusic (fun c -> c.artistName.ToLower().Contains(text.ToLower())) mutableMusicList
                 match result.Length with
-                | x when x > 0 -> return MusicLoaded result
+                | x when x > 0 ->
+                    printfn " ------Using Cache------"
+                    return MusicLoaded result
                 | _ ->
                     let! musicEntries = NetworkService.getMusicDataSearch (Some text)
                     let searchResult =
                         match musicEntries.Length with
                         | x when x > 0 ->
                             mutableMusicList <- musicEntries
+                            printfn "------Using API----"
                             MusicLoaded musicEntries
                         | _ ->
                             MusicLoadedError Strings.CommonErrorMessage
