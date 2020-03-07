@@ -14,5 +14,5 @@ module Models =
           results: Music list }
 
     type Remote<'t> =
-        | Loading
+        | LoadingState
         | Content of 't

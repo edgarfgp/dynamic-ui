@@ -7,7 +7,7 @@ open Fabulous.XamarinForms
 open Xamarin.Forms
 
 module Extensions =
-    let rec filterMusic predicate musicList: Music list =
+    let rec filterMusic predicate musicList =
         match musicList with
         | x :: xs when predicate x -> x :: (filterMusic predicate xs)
         | _ :: xs -> filterMusic predicate xs
@@ -17,11 +17,11 @@ module HomePage =
     open Extensions
 
     type Msg =
-        | MusicLoading
-        | MusicLoaded of Music list
-        | MusicLoadedError of string
+        | Loading
+        | Refresh
+        | LoadingError of string
+        | Loaded of Music list
         | GoToDetailPage of Music
-        | RefreshMusicData
         | MusicTextSearchChanged of string
 
     type Model =
@@ -38,10 +38,10 @@ module HomePage =
     let searchResult musicEntries =
         match musicEntries with
         | Error _ ->
-            MusicLoadedError "An error has occurred"
+            LoadingError "An error has occurred"
         | Ok musicEntries ->
             mutableMusicList <- musicEntries
-            MusicLoaded musicEntries
+            Loaded musicEntries
 
     let filterOrFetchMusicData searchText =
         async {
@@ -54,38 +54,38 @@ module HomePage =
                     let! musicEntries = NetworkService.getMusicDataSearch (Some text)
                     return (searchResult musicEntries)
                 | _ ->
-                    return MusicLoaded result
+                    return Loaded result
             | _ ->
                 match mutableMusicList with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch None
                     return (searchResult musicEntries)
                 | _ ->
-                    return MusicLoaded mutableMusicList
+                    return Loaded mutableMusicList
         }
 
     let init =
-        { MusicList = Remote.Loading
+        { MusicList = Remote.LoadingState
           MusicDataIsRefreshing = false
-          SearchText = "" }, Cmd.ofMsg MusicLoading
+          SearchText = "" }, Cmd.ofMsg Loading
 
     let update msg model =
         match msg with
-        | MusicLoading ->
-            { model with MusicList = Loading }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
+        | Loading ->
+            { model with MusicList = LoadingState }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
 
-        | MusicLoaded data ->
+        | Loaded data ->
             { model with
                   MusicList = Content(Ok data)
                   MusicDataIsRefreshing = false }, Cmd.none, ExternalMsg.NoOp
 
-        | MusicLoadedError error ->
+        | LoadingError error ->
             { model with MusicList = Content(Error error) }, Cmd.none, ExternalMsg.NoOp
 
         | GoToDetailPage music ->
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
-        | RefreshMusicData ->
+        | Refresh ->
             { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
@@ -103,7 +103,7 @@ module HomePage =
                 (verticalOptions = LayoutOptions.Center,
                  children =
                      [ View.Label(text = errorMsg, horizontalTextAlignment = TextAlignment.Center)
-                       View.Button(text = "Try again", command = (fun _ -> dispatch RefreshMusicData)) ])
+                       View.Button(text = "Try again", command = (fun _ -> dispatch Refresh)) ])
 
         let emptyView =
             View.Label
@@ -147,11 +147,11 @@ module HomePage =
                                                         (cornerRadius = 4., height = 250., margin = Thickness(8.),
                                                          content = itemlayout) ]) ]),
                            isRefreshing = model.MusicDataIsRefreshing,
-                           refreshing = (fun () -> dispatch RefreshMusicData)) ])
+                           refreshing = (fun () -> dispatch Refresh)) ])
 
         let content =
             match model.MusicList with
-            | Loading -> loadingView
+            | LoadingState -> loadingView
             | Content(Error errorMsg) -> errorView errorMsg
             | Content(Ok items) -> renderEntries items
 
