@@ -41,7 +41,6 @@ module HomePage =
             MusicLoadedError "An error has occurred"
         | Ok musicEntries ->
             mutableMusicList <- musicEntries
-            printfn "------Using API----"
             MusicLoaded musicEntries
 
     let filterOrFetchMusicData searchText =
