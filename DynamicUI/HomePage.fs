@@ -38,7 +38,7 @@ module HomePage =
     let searchResult musicEntries =
         match musicEntries with
         | Error _ ->
-            MusicLoadedError Strings.CommonErrorMessage
+            MusicLoadedError "An error has occurred"
         | Ok musicEntries ->
             mutableMusicList <- musicEntries
             printfn "------Using API----"
@@ -104,11 +104,11 @@ module HomePage =
                 (verticalOptions = LayoutOptions.Center,
                  children =
                      [ View.Label(text = errorMsg, horizontalTextAlignment = TextAlignment.Center)
-                       View.Button(text = Strings.TryAgainText, command = (fun _ -> dispatch RefreshMusicData)) ])
+                       View.Button(text = "Try again", command = (fun _ -> dispatch RefreshMusicData)) ])
 
         let emptyView =
             View.Label
-                (text = Strings.EmptyResultMessage, horizontalTextAlignment = TextAlignment.Center,
+                (text = "No results available for the current search", horizontalTextAlignment = TextAlignment.Center,
                  horizontalOptions = LayoutOptions.Center, verticalOptions = LayoutOptions.Center)
 
         let rederItem item =
@@ -126,7 +126,7 @@ module HomePage =
             View.StackLayout
                 (children =
                     [ View.UnlinedSearchBar
-                        (placeholder = Strings.SearchPlaceHolderMessage,
+                        (placeholder = "Enter a valid artist",
                          textChanged = debounce 200 (fun args -> args.NewTextValue |> searchMusic),
                          margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
 
@@ -156,4 +156,4 @@ module HomePage =
             | Content(Error errorMsg) -> errorView errorMsg
             | Content(Ok items) -> renderEntries items
 
-        View.ContentPage(title = Strings.HomePageTitle, content = content)
+        View.ContentPage(title = "Home", content = content)

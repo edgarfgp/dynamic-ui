@@ -28,22 +28,22 @@ module DetailPage =
                             source = (Image.Path(model.artworkUrl60)),
                             height = 200.0,
                             margin = Thickness(16.))
-                        
+
                         View.Label(
                             text = model.primaryGenreName,
                             margin = Thickness(16.),
                             horizontalTextAlignment = TextAlignment.Center)
-                        
+
                         View.Label(
                             text = model.artistName,
                             margin = Thickness(16.),
                             horizontalTextAlignment = TextAlignment.Center)
                     ]
                 )
-            
+
         let content =
             View.ScrollView(content = detailEntries)
 
         View.ContentPage(
-              title = Strings.DetailpageTitle,
+              title = "Detail",
               content = content)

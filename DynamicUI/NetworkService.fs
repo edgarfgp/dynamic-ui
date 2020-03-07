@@ -7,11 +7,16 @@ open FSharp.Json
 module NetworkService =
 
     let getMusicDataSearch (searchText: string option) =
+
         async {
-            let term = match searchText with
-                       | Some value -> value
-                       | _ -> ""
-            let! musicEntries = Async.Catch(Http.AsyncRequestString((Strings.BaseUrlWithParam term)))
+            let term =
+                match searchText with
+                | Some value -> value
+                | _ -> ""
+
+            let urlString = sprintf "https://itunes.apple.com/search?term=%A" term
+            
+            let! musicEntries = Async.Catch(Http.AsyncRequestString(urlString))
             let searchResult =
                 match musicEntries with
                 | Choice1Of2 musicList ->
@@ -21,6 +26,3 @@ module NetworkService =
 
             return searchResult
         }
-
-
-
