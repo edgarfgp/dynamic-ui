@@ -11,7 +11,6 @@ type AppDelegate() =
     inherit FormsApplicationDelegate()
 
     override this.FinishedLaunching(app, options) =
-        Xamarin.Forms.Forms.SetFlags([| "Shell_Experimental"; "CollectionView_Experimental"; "Visual_Experimental"; "CarouselView_Experimental" |])
         Forms.Init()
         let appcore = DynamicUI.App()
         this.LoadApplication(appcore)
