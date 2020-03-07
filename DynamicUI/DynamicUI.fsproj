@@ -6,10 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Controls\UnlinedSearchBar.fs" />
-    <Content Include="Music.json" />
     <Compile Include="Models.fs" />
     <Compile Include="NetworkService.fs" />
+    <Compile Include="UnlinedSearchBar.fs" />
     <Compile Include="DetailPage.fs" />
     <Compile Include="HomePage.fs" />
     <Compile Include="App.fs" />

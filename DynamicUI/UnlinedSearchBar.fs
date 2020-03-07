@@ -1,4 +1,4 @@
-namespace DynamicUI.Controls
+namespace DynamicUI
 
 open Fabulous
 open Fabulous.XamarinForms

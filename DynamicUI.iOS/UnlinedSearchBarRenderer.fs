@@ -18,6 +18,6 @@ type UnlinedSearchBarRenderer() as self =
             ()
 
 module UnlinedSearchBarRenderer =
-    [<assembly:Xamarin.Forms.ExportRenderer(typeof<DynamicUI.Controls.UnlinedSearchBar>,
+    [<assembly:Xamarin.Forms.ExportRenderer(typeof<DynamicUI.UnlinedSearchBar>,
                                             typeof<UnlinedSearchBarRenderer>)>]
     do ()

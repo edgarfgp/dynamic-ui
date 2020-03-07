@@ -1,6 +1,6 @@
 namespace DynamicUI
 
-open DynamicUI.Controls
+open DynamicUI
 open DynamicUI.Models
 open Fabulous
 open Fabulous.XamarinForms
