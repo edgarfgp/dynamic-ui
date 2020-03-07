@@ -6,7 +6,16 @@ open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
 
+module Extensions =
+    let rec filterMusic predicate musicList: Music list =
+        match musicList with
+        | x :: xs when predicate x -> x :: (filterMusic predicate xs)
+        | _ :: xs -> filterMusic predicate xs
+        | [] -> []
+
 module HomePage =
+    open Extensions
+
     type Msg =
         | MusicLoading
         | MusicLoaded of Music list
@@ -26,48 +35,33 @@ module HomePage =
 
     let mutable mutableMusicList: Music list = []
 
-    let rec filterMusic predicate musicList: Music list =
-        match musicList with
-        | x :: xs when predicate x -> x :: (filterMusic predicate xs)
-        | _ :: xs -> filterMusic predicate xs
-        | [] -> []
+    let searchResult musicEntries =
+        match musicEntries with
+        | Error _ ->
+            MusicLoadedError Strings.CommonErrorMessage
+        | Ok musicEntries ->
+            mutableMusicList <- musicEntries
+            printfn "------Using API----"
+            MusicLoaded musicEntries
 
     let filterOrFetchMusicData searchText =
         async {
             match searchText with
             | Some text when text <> "" ->
-                let result =
-                    filterMusic (fun c -> c.artistName.ToLower().Contains(text.ToLower())) mutableMusicList
+                let filterCondition = (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
+                let result = filterMusic filterCondition mutableMusicList
                 match result with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch (Some text)
-                    let searchResult =
-                        match musicEntries with
-                        | Error error ->
-                            MusicLoadedError error.Message
-                        | Ok musicEntries ->
-                            mutableMusicList <- musicEntries
-                            printfn "------Using API----"
-                            MusicLoaded musicEntries
-                    return searchResult
+                    return (searchResult musicEntries)
                 | _ ->
-                    printfn " ------Using Cache------"
                     return MusicLoaded result
             | _ ->
                 match mutableMusicList with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch None
-                    let searchResult =
-                        match musicEntries with
-                        | Error _ ->
-                            MusicLoadedError Strings.CommonErrorMessage
-                        | Ok musicEntries ->
-                            mutableMusicList <- musicEntries
-                            printfn "------Refresh from API-----"
-                            MusicLoaded musicEntries
-                    return searchResult
+                    return (searchResult musicEntries)
                 | _ ->
-                    printfn "------Refresh from Cache-----"
                     return MusicLoaded mutableMusicList
         }
 
