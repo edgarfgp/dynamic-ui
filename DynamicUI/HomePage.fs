@@ -32,34 +32,20 @@ module HomePage =
         | _ :: xs -> filterMusic predicate xs
         | [] -> []
 
-    let getMusicDataSearch =
-        async {
-            let! musicEntries = NetworkService.getMusicDataSearch None
-            let searchResult =
-                match musicEntries with
-                | [] ->
-                    MusicLoadedError Strings.CommonErrorMessage
-                | _ ->
-                    mutableMusicList <- musicEntries
-                    printfn "------Using API----"
-                    MusicLoaded musicEntries
-
-            return searchResult
-        }
-
     let filterOrFetchMusicData searchText =
         async {
             match searchText with
             | Some text when text <> "" ->
-                let result = filterMusic (fun c -> c.artistName.ToLower().Contains(text.ToLower())) mutableMusicList
+                let result =
+                    filterMusic (fun c -> c.artistName.ToLower().Contains(text.ToLower())) mutableMusicList
                 match result with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch (Some text)
                     let searchResult =
                         match musicEntries with
-                        | [] ->
-                            MusicLoadedError Strings.CommonErrorMessage
-                        | _ ->
+                        | Error error ->
+                            MusicLoadedError error.Message
+                        | Ok musicEntries ->
                             mutableMusicList <- musicEntries
                             printfn "------Using API----"
                             MusicLoaded musicEntries
@@ -68,7 +54,21 @@ module HomePage =
                     printfn " ------Using Cache------"
                     return MusicLoaded result
             | _ ->
-                return MusicLoaded mutableMusicList
+                match mutableMusicList with
+                | [] ->
+                    let! musicEntries = NetworkService.getMusicDataSearch None
+                    let searchResult =
+                        match musicEntries with
+                        | Error _ ->
+                            MusicLoadedError Strings.CommonErrorMessage
+                        | Ok musicEntries ->
+                            mutableMusicList <- musicEntries
+                            printfn "------Refresh from API-----"
+                            MusicLoaded musicEntries
+                    return searchResult
+                | _ ->
+                    printfn "------Refresh from Cache-----"
+                    return MusicLoaded mutableMusicList
         }
 
     let init =
@@ -79,7 +79,7 @@ module HomePage =
     let update msg model =
         match msg with
         | MusicLoading ->
-            { model with MusicList = Loading }, Cmd.ofAsyncMsg (getMusicDataSearch), ExternalMsg.NoOp
+            { model with MusicList = Loading }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
 
         | MusicLoaded data ->
             { model with
@@ -93,7 +93,7 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
         | RefreshMusicData ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (getMusicDataSearch), ExternalMsg.NoOp
+            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
             { model with SearchText = searchText }, Cmd.ofAsyncMsg (filterOrFetchMusicData (Some searchText)),

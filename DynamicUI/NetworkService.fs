@@ -16,8 +16,8 @@ module NetworkService =
                 match musicEntries with
                 | Choice1Of2 musicList ->
                     let musicList = Json.deserialize<MusicList> musicList
-                    musicList.results
-                | Choice2Of2 _ -> []
+                    Ok musicList.results
+                | Choice2Of2 error -> Error error
 
             return searchResult
         }
