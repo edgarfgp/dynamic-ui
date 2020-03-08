@@ -13,6 +13,10 @@ module Extensions =
         | _ :: xs -> filterMusic predicate xs
         | [] -> []
 
+    let isNullOrWhiteSpace s =
+        if System.String.IsNullOrWhiteSpace s then None
+        else Some s
+
 module HomePage =
     open Extensions
 
@@ -41,12 +45,12 @@ module HomePage =
             LoadingError "An error has occurred"
         | Ok musicEntries ->
             mutableMusicList <- musicEntries
-            Loaded (musicEntries |>List.distinct)
+            Loaded musicEntries
 
     let filterOrFetchMusicData searchText =
         async {
-            match searchText with
-            | Some text when text <> "" || text <> null ->
+            match (isNullOrWhiteSpace searchText) with
+            | Some text ->
                 let filterCondition = (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
                 let filteredResult = (filterMusic filterCondition mutableMusicList) |>List.distinct
                 match filteredResult with
@@ -72,7 +76,7 @@ module HomePage =
     let update msg model =
         match msg with
         | Loading ->
-            { model with MusicList = LoadingState }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
+            { model with MusicList = LoadingState }, Cmd.ofAsyncMsg (filterOrFetchMusicData ""), ExternalMsg.NoOp
 
         | Loaded data ->
             { model with
@@ -86,10 +90,10 @@ module HomePage =
             model, Cmd.none, ExternalMsg.NavigateToDetail music
 
         | Refresh ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (filterOrFetchMusicData None), ExternalMsg.NoOp
+            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (filterOrFetchMusicData ""), ExternalMsg.NoOp
 
         | MusicTextSearchChanged searchText ->
-            { model with SearchText = searchText }, Cmd.ofAsyncMsg (filterOrFetchMusicData (Some searchText)),
+            { model with SearchText = searchText }, Cmd.ofAsyncMsg (filterOrFetchMusicData searchText),
             ExternalMsg.NoOp
 
     let view model dispatch =
