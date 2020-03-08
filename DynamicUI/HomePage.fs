@@ -41,27 +41,27 @@ module HomePage =
             LoadingError "An error has occurred"
         | Ok musicEntries ->
             mutableMusicList <- musicEntries
-            Loaded musicEntries
+            Loaded (musicEntries |>List.distinct)
 
     let filterOrFetchMusicData searchText =
         async {
             match searchText with
-            | Some text when text <> "" ->
+            | Some text when text <> "" || text <> null ->
                 let filterCondition = (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
-                let result = filterMusic filterCondition mutableMusicList
-                match result with
+                let filteredResult = (filterMusic filterCondition mutableMusicList) |>List.distinct
+                match filteredResult with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch (Some text)
                     return (searchResult musicEntries)
                 | _ ->
-                    return Loaded result
+                    return Loaded filteredResult
             | _ ->
                 match mutableMusicList with
                 | [] ->
                     let! musicEntries = NetworkService.getMusicDataSearch None
                     return (searchResult musicEntries)
                 | _ ->
-                    return Loaded mutableMusicList
+                   return Loaded mutableMusicList
         }
 
     let init =
