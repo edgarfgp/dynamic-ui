@@ -5,21 +5,8 @@ open DynamicUI.Models
 open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
-
-module Extensions =
-    let rec filterMusic predicate musicList =
-        match musicList with
-        | x :: xs when predicate x -> x :: (filterMusic predicate xs)
-        | _ :: xs -> filterMusic predicate xs
-        | [] -> []
-
-    let isNullOrWhiteSpace s =
-        if System.String.IsNullOrWhiteSpace s then None
-        else Some s
-
+open DynamicUI.Extensions
 module HomePage =
-    open Extensions
-
     type Msg =
         | Loading
         | Refresh
@@ -47,9 +34,15 @@ module HomePage =
             mutableMusicList <- musicEntries
             Loaded musicEntries
 
+    let rec filterMusic predicate musicList =
+        match musicList with
+        | x :: xs when predicate x -> x :: (filterMusic predicate xs)
+        | _ :: xs -> filterMusic predicate xs
+        | [] -> []
+
     let filterOrFetchMusicData searchText =
         async {
-            match (isNullOrWhiteSpace searchText) with
+            match (Option.OfString searchText) with
             | Some text ->
                 let filterCondition = (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
                 let filteredResult = (filterMusic filterCondition mutableMusicList) |>List.distinct
