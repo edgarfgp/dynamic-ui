@@ -97,18 +97,15 @@ module App =
             pages = (getPages allPages))
 
     let program = Program.mkProgram init update view
+
 type App () as app =
     inherit Application ()
-
     let runner =
         App.program
 #if DEBUG
         |> Program.withConsoleTrace
-
 #endif
         |> XamarinFormsProgram.run app
-
 #if DEBUG
     do runner.EnableLiveUpdate()
-
 #endif

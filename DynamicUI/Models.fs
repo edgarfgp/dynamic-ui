@@ -1,5 +1,6 @@
 namespace DynamicUI
 
+[<AutoOpen>]
 module Models =
 
     type Music =

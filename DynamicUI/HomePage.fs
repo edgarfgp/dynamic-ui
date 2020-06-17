@@ -6,150 +6,110 @@ open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
 open DynamicUI.Extensions
+
 module HomePage =
     type Msg =
         | Loading
-        | Refresh
-        | LoadingError of string
         | Loaded of Music list
-        | GoToDetailPage of Music
+        | LoadingError of string
         | MusicTextSearchChanged of string
+        | GoToDetailPage of Music
 
     type Model =
-        { MusicList: Remote<Result<Music list, string>>
-          MusicDataIsRefreshing: bool
-          SearchText: string }
+        { Music: Remote<Result<Music list, string>>
+          IsRefreshing: bool
+          Text: string option }
 
     type ExternalMsg =
         | NoOp
         | NavigateToDetail of Music
 
-    let mutable mutableMusicList: Music list = []
+    let mutable musicList: Music list = []
 
-    let searchResult musicEntries =
-        match musicEntries with
-        | Error _ ->
-            LoadingError "An error has occurred"
-        | Ok musicEntries ->
-            mutableMusicList <- musicEntries
-            Loaded musicEntries
-
-    let rec filterMusic predicate musicList =
-        match musicList with
-        | x :: xs when predicate x -> x :: (filterMusic predicate xs)
-        | _ :: xs -> filterMusic predicate xs
-        | [] -> []
-
-    let filterOrFetchMusicData searchText =
+    let fetchMusic =
         async {
-            match (Option.OfString searchText) with
-            | Some text ->
-                let filterCondition = (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
-                let filteredResult = (filterMusic filterCondition mutableMusicList) |>List.distinct
-                match filteredResult with
-                | [] ->
-                    let! musicEntries = NetworkService.getMusicDataSearch (Some text)
-                    return (searchResult musicEntries)
-                | _ ->
-                    return Loaded filteredResult
-            | _ ->
-                match mutableMusicList with
-                | [] ->
-                    let! musicEntries = NetworkService.getMusicDataSearch None
-                    return (searchResult musicEntries)
-                | _ ->
-                   return Loaded mutableMusicList
+            let! music = NetworkService.fetchMusic
+            match music with
+            | Ok music ->
+                musicList <- music
+                return Loaded music
+            | Error _ -> return LoadingError "An error has occurred"
         }
 
+    let filterMusic (text: string) =
+        let music = musicList |> List.filter (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
+
+        match music with
+        | [] -> LoadingError "No result available"
+        | ms -> Loaded ms
+
     let init =
-        { MusicList = Remote.LoadingState
-          MusicDataIsRefreshing = false
-          SearchText = "" }, Cmd.ofMsg Loading
+        { Music = Remote.LoadingState
+          IsRefreshing = false
+          Text = None }, Cmd.ofMsg Loading
 
     let update msg model =
         match msg with
-        | Loading ->
-            { model with MusicList = LoadingState }, Cmd.ofAsyncMsg (filterOrFetchMusicData ""), ExternalMsg.NoOp
-
+        | Loading -> { model with Music = LoadingState }, Cmd.ofAsyncMsg fetchMusic, ExternalMsg.NoOp
         | Loaded data ->
             { model with
-                  MusicList = Content(Ok data)
-                  MusicDataIsRefreshing = false }, Cmd.none, ExternalMsg.NoOp
-
-        | LoadingError error ->
-            { model with MusicList = Content(Error error) }, Cmd.none, ExternalMsg.NoOp
-
-        | GoToDetailPage music ->
-            model, Cmd.none, ExternalMsg.NavigateToDetail music
-
-        | Refresh ->
-            { model with MusicDataIsRefreshing = true }, Cmd.ofAsyncMsg (filterOrFetchMusicData ""), ExternalMsg.NoOp
-
-        | MusicTextSearchChanged searchText ->
-            { model with SearchText = searchText }, Cmd.ofAsyncMsg (filterOrFetchMusicData searchText),
-            ExternalMsg.NoOp
+                  Music = Content(Ok data)
+                  IsRefreshing = false }, Cmd.none, ExternalMsg.NoOp
+        | LoadingError error -> { model with Music = Content(Error error) }, Cmd.none, ExternalMsg.NoOp
+        | GoToDetailPage music -> model, Cmd.none, ExternalMsg.NavigateToDetail music
+        | MusicTextSearchChanged text ->
+            { model with Text = Some text }, Cmd.ofMsg (filterMusic text), ExternalMsg.NoOp
 
     let view model dispatch =
-        let searchMusic = MusicTextSearchChanged >> dispatch
-
         let loadingView =
-            View.ActivityIndicator(color = Color.LightBlue, isRunning = true)
+            View.ActivityIndicator
+                (color = Color.LightBlue, isRunning = true, verticalOptions = LayoutOptions.CenterAndExpand)
 
-        let errorView errorMsg =
-            View.StackLayout
-                (verticalOptions = LayoutOptions.Center,
-                 children =
-                     [ View.Label(text = errorMsg, horizontalTextAlignment = TextAlignment.Center)
-                       View.Button(text = "Try again", command = (fun _ -> dispatch Refresh)) ])
-
-        let emptyView =
+        let emptyView error =
             View.Label
-                (text = "No results available for the current search", horizontalTextAlignment = TextAlignment.Center,
-                 horizontalOptions = LayoutOptions.Center, verticalOptions = LayoutOptions.Center)
+                (text = error, horizontalTextAlignment = TextAlignment.Center, horizontalOptions = LayoutOptions.Center,
+                 verticalOptions = LayoutOptions.Center)
 
-        let rederItem item =
-            View.StackLayout
-                (children =
-                    [ View.Image
-                        (source = Path item.artworkUrl60, margin = Thickness(16.),
-                         horizontalOptions = LayoutOptions.FillAndExpand, verticalOptions = LayoutOptions.FillAndExpand)
+        let searchBarView =
+            View.UnlinedSearchBar
+                (placeholder = "Enter a valid artist",
+                 textChanged =
+                     debounce 200 (fun args ->
+                         args.NewTextValue
+                         |> MusicTextSearchChanged
+                         |> dispatch), margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text,
+                 isSpellCheckEnabled = false)
 
-                      View.Label
-                          (text = item.artistName, horizontalTextAlignment = TextAlignment.Center,
-                           margin = Thickness(16.)) ])
+        let renderItem item =
+            dependsOn (item.artworkUrl60, item.artistName) (fun _ (artworkUrl60, artistName) ->
+                View.StackLayout
+                    (children =
+                        [ View.Image
+                            (source = ImagePath(artworkUrl60), margin = Thickness(16.),
+                             horizontalOptions = LayoutOptions.FillAndExpand,
+                             verticalOptions = LayoutOptions.FillAndExpand)
 
-        let renderEntries items =
-            View.StackLayout
-                (children =
-                    [ View.UnlinedSearchBar
-                        (placeholder = "Enter a valid artist",
-                         textChanged = debounce 200 (fun args -> args.NewTextValue |> searchMusic),
-                         margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text, isSpellCheckEnabled = false)
+                          View.Label
+                              (text = artistName, horizontalTextAlignment = TextAlignment.Center,
+                               margin = Thickness(16.)) ]))
 
-                      View.RefreshView
-                          (content =
-                              View.CollectionView
-                                  (selectionMode = SelectionMode.Single, margin = Thickness(8., 0., 8., 0.),
-                                   emptyView = emptyView,
-                                   items =
-                                       [ for item in items ->
-                                           let itemlayout = rederItem item
+        let renderEntries model =
+            View.CollectionView
+                (selectionMode = SelectionMode.Single, margin = Thickness(8., 0., 8., 0.),
+                 items =
+                     [ for item in model ->
+                         let itemLayout = renderItem item
+                         View.StackLayout
+                             (gestureRecognizers =
+                                 [ View.TapGestureRecognizer(command = fun () -> dispatch (GoToDetailPage item)) ],
+                              children =
+                                  [ View.Frame
+                                      (cornerRadius = 4., height = 250., margin = Thickness(8.), content = itemLayout) ]) ])
 
-                                           View.StackLayout
-                                               (gestureRecognizers =
-                                                   [ View.TapGestureRecognizer
-                                                       (command = fun () -> dispatch (GoToDetailPage item)) ],
-                                                children =
-                                                    [ View.Frame
-                                                        (cornerRadius = 4., height = 250., margin = Thickness(8.),
-                                                         content = itemlayout) ]) ]),
-                           isRefreshing = model.MusicDataIsRefreshing,
-                           refreshing = (fun () -> dispatch Refresh)) ])
-
-        let content =
-            match model.MusicList with
+        let pageContent =
+            match model.Music with
             | LoadingState -> loadingView
-            | Content(Error errorMsg) -> errorView errorMsg
-            | Content(Ok items) -> renderEntries items
+            | Content (Error error) -> emptyView error
+            | Content (Ok music) -> renderEntries music
 
-        View.ContentPage(title = "Home", content = content)
+        View.ContentPage(title = "Home", content = View.StackLayout(children = [ searchBarView; pageContent ]))
