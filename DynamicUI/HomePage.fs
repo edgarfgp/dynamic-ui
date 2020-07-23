@@ -71,7 +71,7 @@ module HomePage =
                  verticalOptions = LayoutOptions.Center)
 
         let searchBarView =
-            View.UnlinedSearchBar
+            View.SearchBar
                 (placeholder = "Enter a valid artist",
                  textChanged =
                      debounce 200 (fun args ->
