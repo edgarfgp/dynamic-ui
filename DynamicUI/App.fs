@@ -96,16 +96,16 @@ module App =
             popped =(fun _ -> dispatch NavigationPopped),
             pages = (getPages allPages))
 
-    let program = Program.mkProgram init update view
-
 type App () as app =
     inherit Application ()
-    let runner =
-        App.program
-#if DEBUG
+    do Device.SetFlags([
+            "Shell_Experimental"; "CollectionView_Experimental"; "Visual_Experimental"; 
+            "IndicatorView_Experimental"; "SwipeView_Experimental"; "MediaElement_Experimental"
+            "AppTheme_Experimental"; "RadioButton_Experimental"; "Expander_Experimental"
+        ])
+    
+    let runner = 
+        Program.mkProgram App.init App.update App.view
         |> Program.withConsoleTrace
-#endif
         |> XamarinFormsProgram.run app
-#if DEBUG
-    do runner.EnableLiveUpdate()
-#endif
+        
