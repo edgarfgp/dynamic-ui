@@ -1,9 +1,7 @@
 ﻿namespace DynamicUI
 
-open Fabulous.XamarinForms.LiveUpdate
 open Fabulous
 open Fabulous.XamarinForms
-open Models
 open Xamarin.Forms
 
 module App =
@@ -83,7 +81,8 @@ module App =
         let homePage = HomePage.view model.HomePageModel (HomePageMsg >> dispatch)
 
         let detailPage =
-            model.DetailPageModel |> Option.map (fun dmodel -> DetailPage.view dmodel.Music (DetailPageMsg >> dispatch))
+            model.DetailPageModel
+            |>Option.map (fun model -> DetailPage.view model.Music (DetailPageMsg >> dispatch))
 
         let allPages =
             { HomePage = homePage
@@ -104,7 +103,7 @@ type App () as app =
             "AppTheme_Experimental"; "RadioButton_Experimental"; "Expander_Experimental"
         ])
     
-    let runner = 
+    let _ = 
         Program.mkProgram App.init App.update App.view
         |> Program.withConsoleTrace
         |> XamarinFormsProgram.run app

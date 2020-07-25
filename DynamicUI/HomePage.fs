@@ -1,11 +1,9 @@
 namespace DynamicUI
 
 open DynamicUI
-open DynamicUI.Models
 open Fabulous
 open Fabulous.XamarinForms
 open Xamarin.Forms
-open DynamicUI.Extensions
 
 module HomePage =
     type Msg =

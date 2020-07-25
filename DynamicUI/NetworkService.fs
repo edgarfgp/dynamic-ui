@@ -3,7 +3,6 @@ namespace DynamicUI
 open FSharp.Data
 open FSharp.Json
 
-
 module NetworkService =
     let fetchMusic =
         async {

@@ -1,7 +1,6 @@
 namespace DynamicUI
 
 open Fabulous.XamarinForms
-open Models
 open Xamarin.Forms
 
 module DetailPage =
