@@ -28,6 +28,7 @@ module HomePage =
     let fetchMusic =
         async {
             let! music = NetworkService.fetchMusic
+
             match music with
             | Ok music ->
                 musicList <- music
@@ -36,7 +37,9 @@ module HomePage =
         }
 
     let filterMusic (text: string) =
-        let music = musicList |> List.filter (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
+        let music =
+            musicList
+            |> List.filter (fun c -> c.artistName.ToLower().Contains(text.ToLower()))
 
         match music with
         | [] -> LoadingError "No result available"
@@ -45,7 +48,8 @@ module HomePage =
     let init =
         { Music = Remote.LoadingState
           IsRefreshing = false
-          Text = None }, Cmd.ofMsg Loading
+          Text = None },
+        Cmd.ofMsg Loading
 
     let update msg model =
         match msg with
@@ -53,11 +57,16 @@ module HomePage =
         | Loaded data ->
             { model with
                   Music = Content(Ok data)
-                  IsRefreshing = false }, Cmd.none, ExternalMsg.NoOp
-        | LoadingError error -> { model with Music = Content(Error error) }, Cmd.none, ExternalMsg.NoOp
+                  IsRefreshing = false },
+            Cmd.none,
+            ExternalMsg.NoOp
+        | LoadingError error ->
+            { model with
+                  Music = Content(Error error) },
+            Cmd.none,
+            ExternalMsg.NoOp
         | GoToDetailPage music -> model, Cmd.none, ExternalMsg.NavigateToDetail music
-        | MusicTextSearchChanged text ->
-            { model with Text = Some text }, Cmd.ofMsg (filterMusic text), ExternalMsg.NoOp
+        | MusicTextSearchChanged text -> { model with Text = Some text }, Cmd.ofMsg (filterMusic text), ExternalMsg.NoOp
 
     let view model dispatch =
         let loadingView =
@@ -66,7 +75,9 @@ module HomePage =
 
         let emptyView error =
             View.Label
-                (text = error, horizontalTextAlignment = TextAlignment.Center, horizontalOptions = LayoutOptions.Center,
+                (text = error,
+                 horizontalTextAlignment = TextAlignment.Center,
+                 horizontalOptions = LayoutOptions.Center,
                  verticalOptions = LayoutOptions.Center)
 
         let searchBarView =
@@ -76,7 +87,9 @@ module HomePage =
                      debounce 200 (fun args ->
                          args.NewTextValue
                          |> MusicTextSearchChanged
-                         |> dispatch), margin = Thickness(8.0, 0.0), keyboard = Keyboard.Text,
+                         |> dispatch),
+                 margin = Thickness(8.0, 0.0),
+                 keyboard = Keyboard.Text,
                  isSpellCheckEnabled = false)
 
         let renderItem item =
@@ -84,17 +97,20 @@ module HomePage =
                 View.StackLayout
                     (children =
                         [ View.Image
-                            (source = ImagePath artworkUrl60, margin = Thickness(16.),
+                            (source = ImagePath artworkUrl60,
+                             margin = Thickness(16.),
                              horizontalOptions = LayoutOptions.FillAndExpand,
                              verticalOptions = LayoutOptions.FillAndExpand)
 
                           View.Label
-                              (text = artistName, horizontalTextAlignment = TextAlignment.Center,
+                              (text = artistName,
+                               horizontalTextAlignment = TextAlignment.Center,
                                margin = Thickness(16.)) ]))
 
         let renderEntries model =
             View.CollectionView
-                (selectionMode = SelectionMode.Single, margin = Thickness(8., 0., 8., 0.),
+                (selectionMode = SelectionMode.Single,
+                 margin = Thickness(8., 0., 8., 0.),
                  items =
                      [ for item in model ->
                          let itemLayout = renderItem item

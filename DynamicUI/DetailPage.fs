@@ -8,8 +8,7 @@ module DetailPage =
 
     type Msg = MusicDetailInfo
 
-    type Model =
-        { Music: Music }
+    type Model = { Music: Music }
 
     let init music = { Music = music }
 
@@ -25,11 +24,13 @@ module DetailPage =
                     [ View.Image(source = ImagePath model.artworkUrl60, height = 200.0, margin = Thickness(16.))
 
                       View.Label
-                          (text = model.primaryGenreName, margin = Thickness(16.),
+                          (text = model.primaryGenreName,
+                           margin = Thickness(16.),
                            horizontalTextAlignment = TextAlignment.Center)
 
                       View.Label
-                          (text = model.artistName, margin = Thickness(16.),
+                          (text = model.artistName,
+                           margin = Thickness(16.),
                            horizontalTextAlignment = TextAlignment.Center) ])
 
         let content = View.ScrollView(content = detailEntries)
