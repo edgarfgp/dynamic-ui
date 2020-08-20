@@ -3,6 +3,7 @@ namespace DynamicUI
 open DynamicUI
 open Fabulous
 open Fabulous.XamarinForms
+open Fabulous.XamarinForms.InputTypes.Image
 open Xamarin.Forms
 
 module HomePage =
@@ -83,7 +84,7 @@ module HomePage =
                 View.StackLayout
                     (children =
                         [ View.Image
-                            (source = ImagePath(artworkUrl60), margin = Thickness(16.),
+                            (source = ImagePath artworkUrl60, margin = Thickness(16.),
                              horizontalOptions = LayoutOptions.FillAndExpand,
                              verticalOptions = LayoutOptions.FillAndExpand)
 

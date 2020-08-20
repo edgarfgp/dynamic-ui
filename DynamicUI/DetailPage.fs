@@ -1,6 +1,7 @@
 namespace DynamicUI
 
 open Fabulous.XamarinForms
+open Fabulous.XamarinForms.InputTypes.Image
 open Xamarin.Forms
 
 module DetailPage =
@@ -21,7 +22,7 @@ module DetailPage =
         let detailEntries =
             View.StackLayout
                 (children =
-                    [ View.Image(source = ImagePath(model.artworkUrl60), height = 200.0, margin = Thickness(16.))
+                    [ View.Image(source = ImagePath model.artworkUrl60, height = 200.0, margin = Thickness(16.))
 
                       View.Label
                           (text = model.primaryGenreName, margin = Thickness(16.),

@@ -157,10 +157,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fabulous" Version="0.56.0" />
-    <PackageReference Include="Fabulous.LiveUpdate" Version="0.56.0" />
-    <PackageReference Include="Fabulous.XamarinForms" Version="0.56.0" />
-    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.56.0" />
+    <PackageReference Include="Fabulous" Version="0.57.0" />
+    <PackageReference Include="Fabulous.LiveUpdate" Version="0.57.0" />
+    <PackageReference Include="Fabulous.XamarinForms" Version="0.57.0" />
+    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.57.0" />
     <PackageReference Include="FSharp.Core" Version="4.7.2" />
     <PackageReference Include="FSharp.Data" Version="3.3.3" />
     <PackageReference Include="FSharp.Json" Version="0.4.0" />
