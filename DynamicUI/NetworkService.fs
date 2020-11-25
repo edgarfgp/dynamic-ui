@@ -5,6 +5,9 @@ open DynamicUI.Extensions
 open FSharp.Control.Tasks
 open DynamicUI.Network
 
+type ServiceError =
+    | NetworkError
+    | ParseError of string
 
 type INetworkService =
     abstract GetMusic: unit -> Task<Result<MusicList, ServiceError>>

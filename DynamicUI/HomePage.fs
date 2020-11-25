@@ -33,7 +33,11 @@ module HomePage =
             | Ok music ->
                 musicList <- music.results
                 return Loaded music.results
-            | Error _ -> return LoadingError "An error has occurred"
+            | Error error ->
+                match error with
+                | NetworkError ->
+                    return LoadingError "Please connect to internet."
+                | ParseError _ ->  return LoadingError "Unable to complete your request."
         }
 
     let filterMusic (text: string) =
