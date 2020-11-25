@@ -1,22 +1,36 @@
 namespace DynamicUI
 
-open FSharp.Data
-open FSharp.Json
+open System.Threading.Tasks
+open DynamicUI.Extensions
+open FSharp.Control.Tasks
+open DynamicUI.Network
 
-module NetworkService =
-    let fetchMusic =
-        async {
-            let urlString =
-                sprintf "https://itunes.apple.com/search?term=%A" System.String.Empty
 
-            let! musicEntries = Async.Catch(Http.AsyncRequestString(urlString))
+type INetworkService =
+    abstract GetMusic: unit -> Task<Result<MusicList, ServiceError>>
 
-            let searchResult =
-                match musicEntries with
-                | Choice1Of2 musicList ->
-                    let musicList = Json.deserialize<MusicList> musicList
-                    Ok musicList.results
-                | Choice2Of2 error -> Error error
+type NetworkService() =
+    let httpClientFactory = Http.createHttpClientFactory ()
+    
+    let fetch urlString =
+        let request =
+            Http.createRequest urlString Get
+            |> withHeader ("Accept", "application/json")
+            |> withQueryParam ("print", "Url")
 
-            return searchResult
-        }
+        request |> Http.execute httpClientFactory
+    
+    interface INetworkService with
+        member __.GetMusic() =
+            let urlString = sprintf "https://itunes.apple.com/search?term=%A" System.String.Empty
+
+            task {
+                let! response = fetch urlString
+                match response.StatusCode with
+                | 200 ->
+                    return response.Body
+                        |> JSON.decode
+                        |> Result.mapError ParseError
+                | _ ->
+                    return Error NetworkError
+            }

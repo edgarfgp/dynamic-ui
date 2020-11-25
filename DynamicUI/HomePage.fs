@@ -16,6 +16,7 @@ module HomePage =
 
     type Model =
         { Music: Remote<Result<Music list, string>>
+          service : INetworkService
           IsRefreshing: bool
           Text: string option }
 
@@ -25,14 +26,13 @@ module HomePage =
 
     let mutable musicList: Music list = []
 
-    let fetchMusic =
+    let fetchMusic (service: INetworkService) =
         async {
-            let! music = NetworkService.fetchMusic
-
+            let! music = service.GetMusic() |> Async.AwaitTask
             match music with
             | Ok music ->
-                musicList <- music
-                return Loaded music
+                musicList <- music.results
+                return Loaded music.results
             | Error _ -> return LoadingError "An error has occurred"
         }
 
@@ -47,13 +47,14 @@ module HomePage =
 
     let init =
         { Music = Remote.LoadingState
+          service = NetworkService()
           IsRefreshing = false
           Text = None },
         Cmd.ofMsg Loading
 
     let update msg model =
         match msg with
-        | Loading -> { model with Music = LoadingState }, Cmd.ofAsyncMsg fetchMusic, ExternalMsg.NoOp
+        | Loading -> { model with Music = LoadingState}, Cmd.ofAsyncMsg(fetchMusic model.service), ExternalMsg.NoOp
         | Loaded data ->
             { model with
                   Music = Content(Ok data)

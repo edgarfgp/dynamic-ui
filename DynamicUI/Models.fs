@@ -1,8 +1,11 @@
 namespace DynamicUI
 
+open System.Text.Json.Serialization
+
 [<AutoOpen>]
 module Models =
 
+    [<JsonFSharpConverter>]
     type Music =
         { trackId: int option
           artistId: int option
@@ -10,6 +13,7 @@ module Models =
           artistName: string
           primaryGenreName: string }
 
+    [<JsonFSharpConverter>]
     type MusicList =
         { resultCount: int
           results: Music list }

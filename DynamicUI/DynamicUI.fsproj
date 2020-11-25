@@ -8,22 +8,27 @@
   <ItemGroup>
     <Compile Include="Extensions.fs" />
     <Compile Include="Models.fs" />
+    <Compile Include="Network.fs" />
     <Compile Include="NetworkService.fs" />
     <Compile Include="DetailPage.fs" />
     <Compile Include="HomePage.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fabulous" Version="0.57.0" />
-    <PackageReference Include="Fabulous.LiveUpdate" Version="0.57.0" />
-    <PackageReference Include="FSharp.Json" Version="0.4.0" />
+    <PackageReference Include="Fabulous" Version="0.60.0" />
+    <PackageReference Include="Fabulous.LiveUpdate" Version="0.60.0" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.15.14" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+    <PackageReference Include="Ply" Version="0.3.1" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1269" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
-    <PackageReference Include="Fabulous.XamarinForms" Version="0.57.0" />
-    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.57.0" />
+    <PackageReference Include="Fabulous.XamarinForms" Version="0.60.0" />
+    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.60.0" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="FSharp.Data" Version="3.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>
