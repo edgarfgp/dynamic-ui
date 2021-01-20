@@ -10,7 +10,7 @@ type ServiceError =
     | ParseError of string
 
 type INetworkService =
-    abstract GetMusic: unit -> Task<Result<MusicList, ServiceError>>
+    abstract GetMusic: unit -> ValueTask<Result<MusicList, ServiceError>>
 
 type NetworkService() =
     let httpClientFactory = Http.createHttpClientFactory ()
@@ -27,7 +27,7 @@ type NetworkService() =
         member __.GetMusic() =
             let urlString = sprintf "https://itunes.apple.com/search?term=%A" System.String.Empty
 
-            task {
+            vtask {
                 let! response = fetch urlString
                 match response.StatusCode with
                 | 200 ->

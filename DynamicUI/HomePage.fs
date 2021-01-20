@@ -28,7 +28,7 @@ module HomePage =
 
     let fetchMusic (service: INetworkService) =
         async {
-            let! music = service.GetMusic() |> Async.AwaitTask
+            let! music = service.GetMusic().AsTask() |> Async.AwaitTask
             match music with
             | Ok music ->
                 musicList <- music.results
