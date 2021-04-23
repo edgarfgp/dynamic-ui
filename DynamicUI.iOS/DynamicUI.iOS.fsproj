@@ -156,11 +156,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fabulous" Version="0.61.0" />
-    <PackageReference Include="Fabulous.LiveUpdate" Version="0.61.0" />
-    <PackageReference Include="Fabulous.XamarinForms" Version="0.61.0" />
-    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="0.61.0" />
-    <PackageReference Include="FSharp.Core" Version="5.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1905" />
+    <PackageReference Include="Fabulous" Version="1.0.1" />
+    <PackageReference Include="Fabulous.LiveUpdate" Version="1.0.1" />
+    <PackageReference Include="Fabulous.XamarinForms" Version="1.0.1" />
+    <PackageReference Include="Fabulous.XamarinForms.LiveUpdate" Version="1.0.1" />
+    <PackageReference Include="FSharp.Core" Version="5.0.1" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
   </ItemGroup>
 </Project>

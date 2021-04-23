@@ -24,8 +24,8 @@ type NetworkService() =
         request |> Http.execute httpClientFactory
     
     interface INetworkService with
-        member __.GetMusic() =
-            let urlString = sprintf "https://itunes.apple.com/search?term=%A" System.String.Empty
+        member _.GetMusic() =
+            let urlString = sprintf "https://itunes.apple.com/search?term=%A" ""
 
             vtask {
                 let! response = fetch urlString
